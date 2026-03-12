@@ -11,3 +11,6 @@ Temp ideas
 - profile rankings
 - random joke button
 - joke o da day
+- categorize with tags
+- custom/random feed
+- joke's pot
