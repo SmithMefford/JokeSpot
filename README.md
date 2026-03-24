@@ -14,4 +14,3 @@ Temp ideas
 - categorize with tags
 - custom/random feed
 - joke's pot
-- https://docs.google.com/document/d/19dSgZBABDFpBwUpLKL_f__rQPF5DS8fKPoREig0cU00/edit?usp=sharing
