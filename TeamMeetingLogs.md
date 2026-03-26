@@ -2,8 +2,11 @@
 
 ## Meeting 1
 - Decisions Made
-    - Text Here
+    - By Next meeting:
+          - Finish user stories/epics and assign tasks
+          - Make a basic webpage layout
+          - Setup the ReadMe file
 - Alternative actions discussed
-    - Text Here
+    - N/A
 - Follow-up items, including agreed-on roles and responsibilities
-    - Text Here
+    - N/A
