@@ -1,18 +1,17 @@
-#This is just copy pasted from lab 7, we will need to change it
 services:
   db:
-    image: postgres
+    image: postgres:18
     env_file: .env
     expose:
       - '5432'
     volumes:
-      - jokespot-db:/var/lib/postgresql/data
-      - ./init_data:/docker-entrypoint-initdb.d
+      - jokespot-db:/var/lib/postgresql
+      - ./src/init_data:/docker-entrypoint-initdb.d
+    restart: unless-stopped
+
   web:
     image: node:lts
-    #had to comment this out because it wasnt working
-    #user: 'node' #you can remove this if you are facing access issues when installing node packages
-    working_dir: /home/node/app
+    working_dir: /home/node/app/src
     env_file: .env
     environment:
       - NODE_ENV=development
@@ -23,9 +22,7 @@ services:
     volumes:
       - ./:/home/node/app
     command: 'npm start'
-# This defines our volume(s), which will persist throughout startups.
-# If you want to get rid of a hanging volume, e.g. to test your database init,
-# run `docker-compose rm -v`. Note that this will remove ALL of your data, so
-# be extra sure you've made a stable backup somewhere.
+    restart: unless-stopped
+
 volumes:
-  JokeSpot:
+  jokespot-db:
