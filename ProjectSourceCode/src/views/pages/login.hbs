@@ -1,3 +1,4 @@
+<!--
 <h2>Login</h2>
 {{#if message}}
 <p style="color:red">{{message}}</p>
@@ -8,3 +9,37 @@
     <button type="submit">Login</button>
 </form>
 <p>Don't have an account? <a href="/register">Register here</a></p>
+-->
+
+<div class="container-fluid h-100 d-flex justify-content-center align-items-center mt-5">
+<div class="col-12 col-sm-8 col-md-5 col-lg-4">
+<form action="/login" method="POST" id="login">
+  <div class="mb-4">
+    <h1 class="henny-penny-regular">Login to Jokespot</h1>
+  </div>
+  <div class="mb-4">
+    <label for="username" class="form-label">Username</label>
+    <input name="username" type="name" class="form-control" id="username" aria-describedby="username" required>
+  </div>
+
+  <div class="mb-4">
+  <label for="password" class="form-label">Password</label>
+    <input name="password" type="password" class="form-control" id="password" aria-describedby="password" required>
+  </div>
+
+  <div class="mb-4">
+    {{> message}}
+  </div>
+
+  <div class="mb-4" >
+  <button class="btn btn-custom-color" type="submit" style="background-color: #ff3a28; border-color: #ca1100; color: white;">Login</button>
+  </div>
+
+  <div class="mb-4">
+  <p>
+    Don't have an account? <a class="nav-link" href="/register" style="color: blue; text-decoration: none;">Register</a>
+  </p>
+  </div>
+</form>
+</div>
+</div>
