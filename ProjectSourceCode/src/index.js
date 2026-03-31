@@ -96,6 +96,7 @@ app.get('/home', auth, (req, res) => {
   res.render('pages/home', {
     user: req.session.user,
     message: 'Welcome to JokeSpot!',
+    error: false
   });
 });
 
@@ -103,15 +104,21 @@ app.get('/home', auth, (req, res) => {
 app.post('/register', async (req, res) => {
   try {
     const hash = await bcrypt.hash(req.body.password, 10);
+    const user = req.body.username;
     await db.none(
       'INSERT INTO users(username, password) VALUES($1, $2)',
       [req.body.username, hash],
       console.log(req.body.username)
     );
-    res.redirect('/login');
+    req.session.user = user;
+    req.session.save();
+    res.redirect('/home');
   } catch (error) {
     console.error(error);
-    res.redirect('/register');
+    res.render('pages/register', {
+      message: 'That account already exists!',
+      error: true
+    });
   }
 });
 
@@ -123,13 +130,17 @@ app.post('/login', async (req, res) => {
       [req.body.username]
     );
     if (!user) {
-      return res.redirect('/register');
+      return res.render('pages/login', {
+        message: 'No account found',
+        error: true
+      });
     }
 
     const match = await bcrypt.compare(req.body.password, user.password);
     if (!match) {
       return res.render('pages/login', {
         message: 'Incorrect username or password.',
+        error: true
       });
     }
 
@@ -147,6 +158,7 @@ app.get('/logout', auth, (req, res) => {
   req.session.destroy();
   res.render('pages/home', {
     message: 'Logged out successfully',
+    error: false
   });
 });
 

@@ -1,3 +1,4 @@
+<!--
 <h2>Register</h2>
 <form action="/register" method="POST">
     <label>Username: <input type="text" name="username" required></label><br><br>
@@ -5,3 +6,37 @@
     <button type="submit">Register</button>
 </form>
 <p>Already have an account? <a href="/login">Login here</a></p>
+-->
+
+<div class="container-fluid h-100 d-flex justify-content-center align-items-center mt-5">
+<div class="col-12 col-sm-8 col-md-5 col-lg-4">
+<form action="/register" method="POST" id="register">
+  <div class="mb-4">
+    <h1 class="henny-penny-regular">Register for Jokespot</h1>
+  </div>
+  <div class="mb-4">
+    <label for="username" class="form-label">Username</label>
+    <input name="username" type="name" class="form-control" id="username" required>
+  </div>
+
+  <div class="mb-4">
+  <label for="password" class="form-label">Password</label>
+    <input name="password" type="password" class="form-control" id="password" required>
+  </div>
+
+  <div class="mb-4">
+    {{> message}}
+  </div>
+
+  <div class="mb-4">
+  <button class="btn" type="submit" style="background-color: #ff3a28; border-color: #ca1100; color: white;">Register</button>
+  </div>
+
+  <div class="mb-4">
+  <p>
+    Already have an account? <a class="nav-link" href="/login" style="color: blue; text-decoration: none;">Login</a>
+  </p>
+  </div>
+</form>
+</div>
+</div>
