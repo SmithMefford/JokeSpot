@@ -183,6 +183,11 @@ app.get('/leaderboards', auth, (req,res) => {
   
 })
 
+app.get('/feed', auth, (req,res) => {
+  res.render('pages/feed')
+  
+})
+
 // *****************************************************
 // Section 5: Start Server
 // *****************************************************
