@@ -178,6 +178,11 @@ app.get('/jokecreate', auth, (req,res) => {
   });
 });
 
+app.get('/leaderboards', auth, (req,res) => {
+  res.render('pages/leaderboard')
+  
+})
+
 // *****************************************************
 // Section 5: Start Server
 // *****************************************************
