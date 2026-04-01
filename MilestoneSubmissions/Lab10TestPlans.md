@@ -4,10 +4,9 @@ The test plans should include a description of the test data that will be used t
 The test plans should include a description of the test environment ( localhost / cloud ) that will be used to test the feature.
 The test plans should include a description of the test results that will be used to test the feature.
 The test plan should include information about the user acceptance testers.
-The actual test results based on observations after executing the tests
+The actual test results based on observations after executing the tests  
 (needs to be done)
 
-
-Feature 1: Posting
-Feature 2: Scrolling
-Feature 3: Admin deletion of users and cascading deletions of posts by that user
+Feature 1: Posting  
+Feature 2: Scrolling  
+Feature 3: Admin deletion of users and cascading deletions of posts by that user  
