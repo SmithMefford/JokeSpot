@@ -7,6 +7,6 @@ The test plan should include information about the user acceptance testers.
 The actual test results based on observations after executing the tests  
 (needs to be done)
 
-Feature 1: Posting  
-Feature 2: Scrolling  
-Feature 3: Admin deletion of users and cascading deletions of posts by that user  
+Feature 1: Posting (Sam)  
+Feature 2: Scrolling (Michael)  
+Feature 3: Admin deletion of users and cascading deletions of posts by that user (Smith)    
