@@ -10,3 +10,4 @@ The actual test results based on observations after executing the tests
 Feature 1: Posting (Sam)  
 Feature 2: Scrolling (Michael)  
 Feature 3: Admin deletion of users and cascading deletions of posts by that user (Smith)    
+test cases done by kellen and stephen  
