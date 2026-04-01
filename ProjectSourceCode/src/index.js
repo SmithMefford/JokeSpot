@@ -156,7 +156,7 @@ app.post('/login', async (req, res) => {
 // Logout
 app.get('/logout', auth, (req, res) => {
   req.session.destroy();
-  res.render('pages/home', {
+  res.render('pages/login', {
     message: 'Logged out successfully',
     error: false
   });
