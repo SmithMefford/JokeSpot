@@ -6,3 +6,8 @@ The test plans should include a description of the test results that will be use
 The test plan should include information about the user acceptance testers.
 The actual test results based on observations after executing the tests
 (needs to be done)
+
+
+Feature 1: Posting
+Feature 2: Scrolling
+Feature 3: Admin deletion of users and cascading deletions of posts by that user
