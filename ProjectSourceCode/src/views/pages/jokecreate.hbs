@@ -1,0 +1,20 @@
+<h2>Create a Joke</h2>
+
+{{#if user}}
+<p>{{user.username}}, share your joke!</p>
+{{/if}}
+
+<form action="/create-joke" method="POST">
+
+    <!-- Joke Text Box -->
+    <div style="margin-bottom: 15px;">
+        <label for="jokeContent">Joke:</label><br>
+        <textarea id="jokeContent" name="jokeContent" rows="4" cols="50" placeholder="Type your joke here..."></textarea>
+    </div>
+
+    <button type="submit">Post Joke</button>
+</form>
+
+<form action="/home" method="GET" style="margin-top: 20px;">
+    <button type="submit">Back to Home</button>
+</form>

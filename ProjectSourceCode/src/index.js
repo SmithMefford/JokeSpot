@@ -162,6 +162,22 @@ app.get('/logout', auth, (req, res) => {
   });
 });
 
+app.get('/settings', auth, (req,res) => {
+  res.render('pages/settings', {
+    user: req.session.user,
+    message: 'Welcome to JokeSpot settings!',
+    error: false
+  });
+});
+
+app.get('/jokecreate', auth, (req,res) => {
+  res.render('pages/jokecreate', {
+    user: req.session.user,
+    message: 'post your joke!',
+    error: false
+  });
+});
+
 // *****************************************************
 // Section 5: Start Server
 // *****************************************************
