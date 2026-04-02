@@ -93,10 +93,18 @@ app.get('/register', (req, res) => {
 
 // Home page (protected)
 app.get('/home', auth, (req, res) => {
+  //array of jokes that can be coded from the database for joke of the day
+  const jokes = [
+    "My IQ test finally came back! My score was negative.",
+    "A man walks into a bar and says, 'Ouch!'",
+    "Another man walks into a bar and says, 'Why did they put this here?'"
+  ];
+
   res.render('pages/home', {
     user: req.session.user,
     message: 'Welcome to JokeSpot!',
-    error: false
+    error: false,
+    jokes   // <-- pass jokes array to Handlebars
   });
 });
 
