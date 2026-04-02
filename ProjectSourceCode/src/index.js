@@ -163,10 +163,15 @@ app.post('/login', async (req, res) => {
 
 // Logout
 app.get('/logout', auth, (req, res) => {
-  req.session.destroy();
-  res.render('pages/login', {
-    message: 'Logged out successfully',
-    error: false
+  req.session.destroy((err) => {
+    if (err) {
+      console.log(err);  // log possible error
+      return res.redirect('/home');  // stay on the home page (could also display fail message)
+    }
+    res.render('pages/login', {  // sends you to login upon logout
+      message: "Logged out successfully!",
+      error: false
+    });
   });
 });
 
