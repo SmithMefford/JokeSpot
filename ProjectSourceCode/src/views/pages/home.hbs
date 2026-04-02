@@ -1,28 +1,45 @@
-<h2>Home</h2>
-{{#if user}}
-<p>Welcome, {{user.username}}!</p>
-{{/if}}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>JokeSpot</title>
 
-{{#if message}}
-<p>{{message}}</p>
-{{/if}}
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-..." crossorigin="anonymous">
 
-<h3>Jokes</h3> 
-<ul>
-    A man walks into a bar and says ouch<br>
-    another man walks into a bar and says to the first man "Why did they put this here"
-</ul>
+</head>
+<body class="bg-light">
 
-<div style="margin: 15px 0;">
-    <form action="/jokecreate" method="GET" style="display:inline;">
-        <button type="submit">Create Joke</button>
-    </form>
+<div class="container my-5">
 
-    <form action="/settings" method="GET" style="display:inline;">
-        <button type="submit">Settings</button>
-    </form>
+    {{#if user}}
+    <h2 class="text-center mb-3">Welcome, {{user.username}}!</h2>
+    {{/if}}
 
-    <form action="/leaderboards" method="GET" style="display:inline;">
-        <button type="submit">Leaderboards</button>
-    </form>
+    {{#if message}}
+      <p class="text-center text-success">{{message}}</p>
+    {{/if}}
+
+    <h3 class="text-center mt-4 mb-4">Jokes of the Day</h3>
+
+    <div class="d-flex flex-column align-items-center gap-3">
+        {{#each jokes}}
+        <div class="card text-center" style="width: 25rem;">
+            <div class="card-body henny-penny-regular">
+                {{this}}
+            </div>
+        </div>
+        {{/each}}
+    </div>
+
+    <div class="d-flex justify-content-center gap-2 mt-4">
+        <a href="/jokecreate" class="btn btn-primary henny-penny-regular">Create Joke</a>
+        <a href="/settings" class="btn btn-secondary henny-penny-regular">Settings</a>
+        <a href="/leaderboards" class="btn btn-success henny-penny-regular">Leaderboards</a>
+    </div>
+
 </div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js" integrity="sha384-..." crossorigin="anonymous"></script>
+
+</body>
+</html>
