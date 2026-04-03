@@ -109,15 +109,16 @@ app.get('/home', (req, res) => {
   });
 });
 
-// Register POST
 app.post('/register', async (req, res) => {
   try {
     const hash = await bcrypt.hash(req.body.password, 10);
-    const user = req.body.username;
     await db.none(
       'INSERT INTO users(username, password) VALUES($1, $2)',
-      [req.body.username, hash],
-      console.log(req.body.username)
+      [req.body.username, hash]
+    );
+    const user = await db.one(
+      'SELECT * FROM users WHERE username = $1',
+      [req.body.username]
     );
     req.session.user = user;
     req.session.save();
