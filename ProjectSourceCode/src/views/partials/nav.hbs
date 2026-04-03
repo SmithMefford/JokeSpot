@@ -25,19 +25,50 @@
          </li>
        </ul>
 
+<!--
         {{#if user}}
             <div class="nav-item me-3">
-                <a class="nav-link" href="/#">{{user.username}}'s Profile</a> <!-- change /# to API route -->
+                <a class="nav-link" href="/logout">Logout</a>
             </div>
             <div class="nav-item me-3">
-                <a class="nav-link" href="/logout">Logout</a>
+                <a class="nav-link" href="/#">{{user.username}}'s Profile</a>  change /# to API route/ will use profile picture once implemented 
             </div>
         {{else}}
             <div class="nav-item me-3">
                 <a class="nav-link" href="/login">Login</a>
             </div>
         {{/if}}
+-->
 
+{{#if user}}
+    <div class="dropdown">
+      <img
+        id="profile-icon"
+        src="/img/happyFace.png"
+        alt="Profile"
+        width="40"
+        height="40"
+        class="rounded-circle border border-2 border-dark"
+        data-bs-toggle="dropdown"
+        role="button"
+        aria-expanded="false"
+        style="cursor:pointer; object-fit:cover;"
+      >
+      <ul class="dropdown-menu dropdown-menu-end">
+        <li><span class="dropdown-item-text text-muted">{{user.username}}</span></li> <!-- Change to use user profile pictures when added-->
+        <li><hr class="dropdown-divider"></li>
+        <li><a class="dropdown-item" href="/#">Profile</a></li> <!-- change /# to API route once profile page added -->
+        <li><hr class="dropdown-divider"></li>
+        <li><a class="dropdown-item" href="/settings">Settings</a></li>
+        <li><hr class="dropdown-divider"></li>
+        <li><a class="dropdown-item" href="/logout">Logout</a></li>
+      </ul>
+    </div>
+{{else}}
+    <div class="nav-item me-3">
+        <a class="nav-link" href="/login">Login</a>
+    </div>
+{{/if}}
        
      </div>
    </div>

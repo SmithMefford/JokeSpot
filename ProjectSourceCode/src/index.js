@@ -30,6 +30,7 @@ app.use(bodyParser.urlencoded({ extended: true }));
 // Serve static resources (CSS/JS)
 app.use('/css', express.static(path.join(__dirname, 'resources', 'css')));
 app.use('/js', express.static(path.join(__dirname, 'resources', 'js')));
+app.use('/img', express.static(path.join(__dirname, 'resources', 'img')));
 
 // Session setup
 app.use(
@@ -78,7 +79,7 @@ const auth = (req, res, next) => {
 
 // Redirect root to login
 app.get('/', (req, res) => {
-  res.redirect('/login');
+  res.redirect('/home');
 });
 
 // Login page
@@ -92,7 +93,7 @@ app.get('/register', (req, res) => {
 });
 
 // Home page (protected)
-app.get('/home', auth, (req, res) => {
+app.get('/home', (req, res) => {
   //array of jokes that can be coded from the database for joke of the day
   const jokes = [
     "My IQ test finally came back! My score was negative.",
@@ -191,12 +192,12 @@ app.get('/jokecreate', auth, (req,res) => {
   });
 });
 
-app.get('/leaderboards', auth, (req,res) => {
+app.get('/leaderboards', (req,res) => {
   res.render('pages/leaderboard')
   
 })
 
-app.get('/feed', auth, (req,res) => {
+app.get('/feed', (req,res) => {
   res.render('pages/feed')
   
 })

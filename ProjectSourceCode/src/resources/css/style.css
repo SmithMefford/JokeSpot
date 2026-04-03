@@ -5,3 +5,11 @@
   font-weight: 400;
   font-style: normal;
 }
+
+#profile-icon {
+  transition: opacity 0.2s ease;
+}
+
+#profile-icon:hover {
+  opacity: 0.7;
+}

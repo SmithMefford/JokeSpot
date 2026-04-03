@@ -1,16 +1,6 @@
-<!--
-<h2>Register</h2>
-<form action="/register" method="POST">
-    <label>Username: <input type="text" name="username" required></label><br><br>
-    <label>Password: <input type="password" name="password" required></label><br><br>
-    <button type="submit">Register</button>
-</form>
-<p>Already have an account? <a href="/login">Login here</a></p>
--->
-
 <div class="container-fluid h-100 d-flex justify-content-center align-items-center mt-5">
 <div class="col-12 col-sm-8 col-md-5 col-lg-4">
-<form action="/register" method="POST" id="register">
+<form action="/register" method="POST" class="needs-validation" id="register" novalidate>
   <div class="mb-4">
     <h1 class="henny-penny-regular">Register for Jokespot</h1>
   </div>
@@ -21,7 +11,13 @@
 
   <div class="mb-4">
   <label for="password" class="form-label">Password</label>
-    <input name="password" type="password" class="form-control" id="password" required>
+    <input name="password" type="password" class="form-control" id="regPassword" required>
+    <small class="text-muted">
+      Must be 8+ characters with at least 1 uppercase, 1 lowercase, 1 number, and 1 symbol (@$!%*?&).
+    </small>
+    <div class="invalid-feedback">
+      Password must be 8+ characters with uppercase, lowercase, number, and symbol.
+    </div>
   </div>
 
   <div class="mb-4">
