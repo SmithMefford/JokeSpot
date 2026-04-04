@@ -1,7 +1,7 @@
 -- Skeleton setup, revise this later this week
 CREATE TABLE IF NOT EXISTS users (
-    username varchar(50) PRIMARY KEY NOT NULL,
-    password varchar(60) NOT NULL
+    username varchar(60) PRIMARY KEY NOT NULL,
+    password varchar(255) NOT NULL
 );
 
 CREATE TABLE IF NOT EXISTS jokes (

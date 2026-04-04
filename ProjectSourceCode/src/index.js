@@ -30,6 +30,7 @@ app.use(bodyParser.urlencoded({ extended: true }));
 // Serve static resources (CSS/JS)
 app.use('/css', express.static(path.join(__dirname, 'resources', 'css')));
 app.use('/js', express.static(path.join(__dirname, 'resources', 'js')));
+app.use('/img', express.static(path.join(__dirname, 'resources', 'img')));
 
 // Session setup
 app.use(
@@ -78,7 +79,7 @@ const auth = (req, res, next) => {
 
 // Redirect root to login
 app.get('/', (req, res) => {
-  res.redirect('/login');
+  res.redirect('/home');
 });
 
 // Login page
@@ -92,13 +93,13 @@ app.get('/register', (req, res) => {
 });
 
 // Home page (protected)
-app.get('/home', auth, (req, res) => {
+app.get('/home', (req, res) => {
   //array of jokes that can be coded from the database for joke of the day
   const jokes = [
     "My IQ test finally came back! My score was negative.",
-    "A man walks into a bar and says, 'Ouch!'",
-    "Another man walks into a bar and says, 'Why did they put this here?'"
+    "A man walks into a bar and says, 'Ouch!'"
   ];
+  //"Another man walks into a bar and says, 'Why did they put this here?'"
 
   res.render('pages/home', {
     user: req.session.user,
@@ -108,15 +109,16 @@ app.get('/home', auth, (req, res) => {
   });
 });
 
-// Register POST
 app.post('/register', async (req, res) => {
   try {
     const hash = await bcrypt.hash(req.body.password, 10);
-    const user = req.body.username;
     await db.none(
       'INSERT INTO users(username, password) VALUES($1, $2)',
-      [req.body.username, hash],
-      console.log(req.body.username)
+      [req.body.username, hash]
+    );
+    const user = await db.one(
+      'SELECT * FROM users WHERE username = $1',
+      [req.body.username]
     );
     req.session.user = user;
     req.session.save();
@@ -191,12 +193,12 @@ app.get('/jokecreate', auth, (req,res) => {
   });
 });
 
-app.get('/leaderboards', auth, (req,res) => {
+app.get('/leaderboards', (req,res) => {
   res.render('pages/leaderboard')
   
 })
 
-app.get('/feed', auth, (req,res) => {
+app.get('/feed', (req,res) => {
   res.render('pages/feed')
   
 })

@@ -1,47 +1,71 @@
 <!-- TODO: WORK IN PROGRESS -->
 <header>
- <nav class="navbar navbar-expand-sm border-bottom">
-   <div class="container">
-     <button
-       class="navbar-toggler ms-auto"
-       type="button"
-       data-bs-toggle="collapse"
-       data-bs-target="#navbar-collapse"
-       aria-controls="navbar"
-       aria-expanded="false"
-       aria-label="Toggle navigation">
-       <span class="navbar-toggler-icon"></span>
-     </button>
+ <nav class="navbar border-bottom">
+   <div class="container-fluid">
 
-     <!-- Header links -->
-     <div class="collapse navbar-collapse" id="navbar-collapse">
-
-       <ul class="navbar-nav me-auto">
-         <li class="nav-item">
-           <a class="nav-link" href="/home">Joke of the Day</a>
-         </li>
-         <li class="nav-item">
-           <a class="nav-link" href="/feed">The Feed</a>
-         </li>
-       </ul>
-
-        {{#if user}}
-            <div class="nav-item me-3">
-                <a class="nav-link" href="/#">{{user.username}}'s Profile</a> <!-- change /# to API route -->
-            </div>
-            <div class="nav-item me-3">
-                <a class="nav-link" href="/logout">Logout</a>
-            </div>
-        {{else}}
-            <div class="nav-item me-3">
-                <a class="nav-link" href="/login">Login</a>
-            </div>
-        {{/if}}
-
-       
+     <!-- Toggler + Brand -->
+     <div class="d-flex align-items-center">
+       <button
+         class="navbar-toggler border-0 me-2"
+         type="button"
+         data-bs-toggle="offcanvas"
+         data-bs-target="#sidebar"
+         aria-controls="sidebar"
+         aria-label="Toggle navigation">
+         <span class="navbar-toggler-icon"></span>
+       </button>
+       <img
+             id="logo-icon"
+             src="/img/jokesPot.png"
+             alt="Logo"
+             width="40"
+             height="40"
+             class="rounded-circle"
+             data-bs-toggle="dropdown"
+             role="button"
+             aria-expanded="false"
+             style="cursor:pointer; object-fit:cover;"
+           >
+       <a class="navbar-brand henny-penny-regular" href="/home">JokeSpot</a>
      </div>
+
+     <!-- Profile icon -->
+     {{#if user}}
+         <div class="dropdown">
+           <img
+             id="profile-icon"
+             src="/img/happyFace.png"
+             alt="Profile"
+             width="40"
+             height="40"
+             class="rounded-circle border border-2 border-dark"
+             data-bs-toggle="dropdown"
+             role="button"
+             aria-expanded="false"
+             style="cursor:pointer; object-fit:cover;"
+           >
+           <ul class="dropdown-menu dropdown-menu-end">
+             <li><span class="dropdown-item-text text-muted">{{user.username}}</span></li>
+             <li><hr class="dropdown-divider"></li>
+             <li><a class="dropdown-item" href="/#">Profile</a></li>
+             <li><hr class="dropdown-divider"></li>
+             <li><a class="dropdown-item" href="/settings">Settings</a></li>
+             <li><hr class="dropdown-divider"></li>
+             <li><a class="dropdown-item text-danger" href="/logout">Logout <i class="fa-solid fa-arrow-right-from-bracket"></i></a></li>
+           </ul>
+         </div>
+     {{else}}
+         <a class="nav-link" href="/login">Login</a>
+     {{/if}}
+
    </div>
  </nav>
+
+ <!-- Offcanvas Sidebar -->
+ <div class="offcanvas offcanvas-start" tabindex="-1" id="sidebar" aria-labelledby="sidebarLabel">
+   
+ </div>
+
 </header>
 
 <main>

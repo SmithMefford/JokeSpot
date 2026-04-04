@@ -5,3 +5,22 @@
   font-weight: 400;
   font-style: normal;
 }
+
+#profile-icon {
+  transition: opacity 0.2s ease;
+}
+
+#profile-icon:hover {
+  opacity: 0.7;
+}
+
+.glow-gh i {
+  transition: 0.3s ease;
+}
+
+.glow-gh:hover i {
+  color: #ffffff; /* or white depending on background */
+
+  text-shadow: 0 0 8px #000000,
+               0 0 15px #000000;
+}
