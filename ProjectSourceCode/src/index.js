@@ -203,7 +203,32 @@ app.get('/feed', (req,res) => {
   res.render('pages/feed', { 
     user: req.session.user
   });
-})
+});
+
+// Once the joke creation backend is implemented, we can replace the console logs with the actual data inserts.
+app.post('/rateJoke', (req,res) => {
+  const rating = req.body.data;
+  switch (rating) {
+    case "upvote":
+      console.log("the joke was upvoted");
+      break;
+    case "downvote":
+      console.log("the joke was downvoted")
+      break;
+  }
+});
+
+// Prepares the partial and then sends it to the client to be inserted dynamically
+// Later, we can modify this to retrieve data from the DB, populate the post partial,
+// then send it back to the client.
+app.get('/loadJokes', async (req,res) => {
+  try {
+    
+    res.render('partials/post.hbs', { layout: false });
+  } catch (err) {
+    res.status(500).send("Failed to load post")
+  }
+});
 
 // *****************************************************
 // Section 5: Start Server
