@@ -1,7 +1,3 @@
-// *****************************************************
-// Section 1: Import Dependencies
-// *****************************************************
-
 const express = require('express');
 const app = express();
 const handlebars = require('express-handlebars');
@@ -10,10 +6,6 @@ const pgp = require('pg-promise')();
 const bodyParser = require('body-parser');
 const session = require('express-session');
 const bcrypt = require('bcryptjs');
-
-// *****************************************************
-// Section 2: Configure Handlebars & Database
-// *****************************************************
 
 const hbs = handlebars.create({
   extname: 'hbs',
@@ -27,22 +19,20 @@ app.set('views', path.join(__dirname, 'views'));
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
 
-// Serve static resources (CSS/JS)
 app.use('/css', express.static(path.join(__dirname, 'resources', 'css')));
 app.use('/js', express.static(path.join(__dirname, 'resources', 'js')));
+app.use('/img', express.static(path.join(__dirname, 'resources', 'img')));
 
-// Session setup
 app.use(
   session({
-    secret: 'temporary-secret', // simplified for dev
+    secret: 'temporary-secret',
     saveUninitialized: false,
     resave: false,
   })
 );
 
-// Database config
 const dbConfig = {
-  host: 'db',
+  host: 'localhost',
   port: 5432,
   database: process.env.POSTGRES_DB,
   user: process.env.POSTGRES_USER,
@@ -51,7 +41,6 @@ const dbConfig = {
 
 const db = pgp(dbConfig);
 
-// Test DB connection
 db.connect()
   .then(obj => {
     console.log('Database connection successful');
@@ -61,10 +50,6 @@ db.connect()
     console.error('Database connection error:', error.message || error);
   });
 
-// *****************************************************
-// Section 3: Middleware
-// *****************************************************
-
 const auth = (req, res, next) => {
   if (!req.session.user) {
     return res.redirect('/login');
@@ -72,31 +57,30 @@ const auth = (req, res, next) => {
   next();
 };
 
-// *****************************************************
-// Section 4: Routes
-// *****************************************************
-
-// Redirect root to login
 app.get('/', (req, res) => {
   res.redirect('/login');
 });
 
-// Login page
 app.get('/login', (req, res) => {
   res.render('pages/login');
 });
 
-// Register page
 app.get('/register', (req, res) => {
   res.render('pages/register');
 });
 
 // Home page (protected)
 app.get('/home', auth, (req, res) => {
+  const jokes = [
+    "My IQ test finally came back! My score was negative.",
+    "A man walks into a bar and says, 'Ouch!'"
+  ];
+
   res.render('pages/home', {
     user: req.session.user,
     message: 'Welcome to JokeSpot!',
-    error: false
+    error: false,
+    jokes
   });
 });
 
@@ -104,12 +88,25 @@ app.get('/home', auth, (req, res) => {
 app.post('/register', async (req, res) => {
   try {
     const hash = await bcrypt.hash(req.body.password, 10);
-    const user = req.body.username;
+    
+    const defaultAvatars = [
+      '/img/default_profile_1.png',
+      '/img/default_profile_2.png',
+      '/img/default_profile_3.png',
+      '/img/default_profile_4.png',
+      '/img/default_profile_5.png'
+    ];
+    const randomAvatar = defaultAvatars[Math.floor(Math.random() * defaultAvatars.length)];
+
     await db.none(
-      'INSERT INTO users(username, password) VALUES($1, $2)',
-      [req.body.username, hash],
-      console.log(req.body.username)
+      'INSERT INTO users(username, password, profile_photo_url) VALUES($1, $2, $3)',
+      [req.body.username, hash, randomAvatar]
     );
+    const user = await db.one(
+      'SELECT * FROM users WHERE username = $1',
+      [req.body.username]
+    );
+    
     req.session.user = user;
     req.session.save();
     res.redirect('/home');
@@ -122,7 +119,6 @@ app.post('/register', async (req, res) => {
   }
 });
 
-// Login POST
 app.post('/login', async (req, res) => {
   try {
     const user = await db.oneOrNone(
@@ -153,12 +149,16 @@ app.post('/login', async (req, res) => {
   }
 });
 
-// Logout
 app.get('/logout', auth, (req, res) => {
-  req.session.destroy();
-  res.render('pages/login', {
-    message: 'Logged out successfully',
-    error: false
+  req.session.destroy((err) => {
+    if (err) {
+      console.log(err);
+      return res.redirect('/home');
+    }
+    res.render('pages/login', {
+      message: "Logged out successfully!",
+      error: false
+    });
   });
 });
 
@@ -179,13 +179,77 @@ app.get('/jokecreate', auth, (req,res) => {
 });
 
 app.get('/leaderboards', auth, (req,res) => {
-  res.render('pages/leaderboard')
-  
-})
+  res.render('pages/leaderboard', { 
+    user: req.session.user
+  });
+});
 
-// *****************************************************
-// Section 5: Start Server
-// *****************************************************
+app.get('/feed', auth, (req,res) => {
+  res.render('pages/feed', { 
+    user: req.session.user
+  });
+});
+
+app.get('/profile/:username?', auth, async (req, res) => {
+  try {
+    const targetUsername = req.params.username || req.session.user.username;
+    const isOwner = targetUsername === req.session.user.username;
+
+    const profileUser = await db.oneOrNone('SELECT * FROM users WHERE username = $1', [targetUsername]);
+
+    if (!profileUser) {
+      return res.redirect('/home');
+    }
+
+    const isPrivateView = profileUser.is_private && !isOwner;
+
+    const average_rating = 4.5;
+    const rank = 10;
+    const rating_title = "Open Mic Rookie";
+
+    res.render('pages/profile', {
+      display_name: profileUser.display_name || profileUser.username,
+      username: profileUser.username,
+      profile_photo_url: profileUser.profile_photo_url,
+      is_private_view: isPrivateView,
+      is_owner: isOwner,
+      average_rating,
+      rank,
+      rating_title
+    });
+  } catch (error) {
+    console.error(error);
+    res.redirect('/home');
+  }
+});
+
+app.get('/profile/edit', auth, async (req, res) => {
+  try {
+    const user = await db.one('SELECT * FROM users WHERE username = $1', [req.session.user.username]);
+    res.render('pages/profile-edit', {
+      user: user
+    });
+  } catch (error) {
+    console.error(error);
+    res.redirect('/profile');
+  }
+});
+
+app.post('/profile/edit', auth, async (req, res) => {
+  try {
+    const isPrivate = req.body.is_private === 'on';
+    
+    await db.none(
+      'UPDATE users SET display_name = $1, profile_photo_url = $2, is_private = $3 WHERE username = $4',
+      [req.body.display_name, req.body.profile_photo_url, isPrivate, req.session.user.username]
+    );
+    
+    res.redirect('/profile');
+  } catch (error) {
+    console.error(error);
+    res.redirect('/profile/edit');
+  }
+});
 
 app.listen(3000, '0.0.0.0', () => {
   console.log('Server listening on port 3000');

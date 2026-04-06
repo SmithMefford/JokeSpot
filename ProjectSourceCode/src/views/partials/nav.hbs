@@ -1,35 +1,96 @@
-<!-- TODO: WORK IN PROGRESS -->
 <header>
- <nav class="navbar navbar-expand-sm border-bottom">
-   <div class="container">
-     <button
-       class="navbar-toggler ms-auto"
-       type="button"
-       data-bs-toggle="collapse"
-       data-bs-target="#navbar-collapse"
-       aria-controls="navbar"
-       aria-expanded="false"
-       aria-label="Toggle navigation">
-       <span class="navbar-toggler-icon"></span>
-     </button>
-     <div class="collapse navbar-collapse" id="navbar-collapse">
-       <ul class="navbar-nav me-auto">
-         <li class="nav-item">
-           <a class="nav-link" href="/#">Joke of the Day</a> <!-- change /# to API route -->
-         </li>
-         <li class="nav-item">
-           <a class="nav-link" href="/#">The Feed</a> <!-- change /# to API route -->
-         </li>
-         <li class="nav-item">
-           <a class="nav-link" href="/#">My Profile</a> <!-- change /# to API route -->
-         </li>
-       </ul>
-       <div class="nav-item me-1">
-            <a class="nav-link" href="/#">Logout</a> <!-- change /# to API route -->
-       </div>
+ <nav class="navbar border-bottom">
+   <div class="container-fluid">
+
+     <div class="d-flex align-items-center">
+       <button
+         class="navbar-toggler border-0 me-2"
+         type="button"
+         data-bs-toggle="offcanvas"
+         data-bs-target="#sidebar"
+         aria-controls="sidebar"
+         aria-label="Toggle navigation">
+         <span class="navbar-toggler-icon"></span>
+       </button>
+       <img
+             id="logo-icon"
+             src="/img/jokesPot.png"
+             alt="Logo"
+             width="40"
+             height="40"
+             class="rounded-circle"
+             data-bs-toggle="dropdown"
+             role="button"
+             aria-expanded="false"
+             style="cursor:pointer; object-fit:cover;"
+       >
+       <a class="navbar-brand henny-penny-regular" href="/home">JokeSpot</a>
      </div>
+
+     {{#if user}}
+         <div class="dropdown">
+           <img
+             id="profile-icon"
+             src="{{user.profile_photo_url}}"
+             alt="Profile"
+             width="40"
+             height="40"
+             class="rounded-circle border border-2 border-dark"
+             data-bs-toggle="dropdown"
+             role="button"
+             aria-expanded="false"
+             style="cursor:pointer; object-fit:cover;"
+           >
+           <ul class="dropdown-menu dropdown-menu-end">
+             <li><span class="dropdown-item-text text-muted">{{user.username}}</span></li>
+             <li><hr class="dropdown-divider"></li>
+             <li><a class="dropdown-item" href="/profile">Profile</a></li>
+             <li><hr class="dropdown-divider"></li>
+             <li><a class="dropdown-item" href="/settings">Settings</a></li>
+             <li><hr class="dropdown-divider"></li>
+             <li><a class="dropdown-item text-danger" href="/logout">Logout <i class="fa-solid fa-arrow-right-from-bracket"></i></a></li>
+           </ul>
+         </div>
+     {{else}}
+         <a class="nav-link" href="/login">Login</a>
+     {{/if}}
+
    </div>
  </nav>
+
+<div class="offcanvas offcanvas-start" tabindex="-1" id="sidebar" aria-labelledby="sidebarLabel">
+  
+  <div class="offcanvas-header">
+    <h5 id="sidebarLabel" class="henny-penny-regular">Menu</h5>
+    <button type="button" class="btn-close" data-bs-dismiss="offcanvas"></button>
+  </div>
+
+  <div class="offcanvas-body d-flex flex-column gap-2">
+
+    <a href="/home" class="btn btn-primary henny-penny-regular">Home</a>
+    <a href="/feed" class="btn btn-purple btn-secondary henny-penny-regular">Feed</a>
+    <a href="/leaderboards" class="btn btn-success henny-penny-regular">Leaderboards</a>
+    <div class="text-center my-3">
+  <img 
+    src="/img/jokesPot.png" 
+    alt="Sidebar Image" 
+    class="img-fluid rounded"
+    style="max-height: 150px;"
+  >
+  </div>
+    <div class="mt-auto d-flex flex-column gap-2">
+    {{#if user}}
+      <a href="/profile" class="btn btn-info henny-penny-regular">Profile</a>
+      <a href="/settings" class="btn btn-warning henny-penny-regular">Settings</a>
+      <a href="/logout" class="btn btn-danger henny-penny-regular">Logout</a>
+    {{else}}
+      <a href="/login" class="btn btn-primary henny-penny-regular">Login</a>
+      <a href="/register" class="btn btn-outline-primary henny-penny-regular">Register</a>
+    {{/if}}
+    </div>
+  </div>
+</div>
+
 </header>
 
 <main>
