@@ -218,6 +218,18 @@ app.post('/rateJoke', (req,res) => {
   }
 });
 
+// Prepares the partial and then sends it to the client to be inserted dynamically
+// Later, we can modify this to retrieve data from the DB, populate the post partial,
+// then send it back to the client.
+app.get('/loadJokes', async (req,res) => {
+  try {
+    
+    res.render('partials/post.hbs', { layout: false });
+  } catch (err) {
+    res.status(500).send("Failed to load post")
+  }
+});
+
 // *****************************************************
 // Section 5: Start Server
 // *****************************************************

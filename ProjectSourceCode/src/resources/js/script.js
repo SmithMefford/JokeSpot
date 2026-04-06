@@ -46,8 +46,9 @@ console.log("script.js loaded");
 
 })();
 
-// Prevents the page from hanging when liking/disliking
+// Allows to call api routes without refreshing the page  
 document.addEventListener("submit", async (event) => {
+  console.log(event.target.id)
   if (event.target.id === "rateJoke") {
     event.preventDefault();
   
@@ -57,5 +58,13 @@ document.addEventListener("submit", async (event) => {
       headers: { 'Content-Type' : 'application/json' },
       body: JSON.stringify({ data : rating})
     });
+  } else if (event.target.id === "loadJokes") {
+    event.preventDefault();
+
+    for (let i = 0; i < 6; i++) {
+      const res = await fetch('/loadJokes');
+      const post = await res.text();
+      document.getElementById('feedBox').innerHTML += post;
+    }
   }
 });

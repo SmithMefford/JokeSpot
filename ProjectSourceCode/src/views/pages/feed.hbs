@@ -1,7 +1,7 @@
 <div class="container justify-content-center align-items-center">
     <h1 class="henny-penny-regular my-4">Feed the doomscroll...</h1>
-    <div class="container border rounded justify-content-center align-items-center overflow-auto" style="height: 500px;">
-        <div class="row m-1 border">
+    <div class="container border rounded justify-content-center align-items-center overflow-auto" id="feedBox" style="height: 500px;">
+        {{!-- <div class="row m-1 border">
             <div class="col col-12 text-start">
                 <div class="d-flex justify-content-start align-items-center border-bottom">
                     <div class="ratio rounded-circle overflow-hidden m-2" style="height: 48px;width: 48px;">
@@ -21,11 +21,14 @@
         {{> post}}
         {{> post}}
         {{> post}}
-        {{> post}}
+        {{> post}} --}}
     </div>
-<div class="text-center my-3">
-  <a href="/home" class="btn btn-purple henny-penny-regular">
-    Home
-  </a>
-</div>
+    <form class="text-center my-3" action="/loadJokes" method="GET" id="loadJokes">
+        <button class="btn btn-purple henny-penny-regular" type="submit" style="font-size: x-large;">Entertain me, Jester!</button>
+    </form>
+    <div class="text-center my-3">
+        <a href="/home" class="btn btn-purple henny-penny-regular">
+            Home
+        </a>
+    </div>
 </div>
