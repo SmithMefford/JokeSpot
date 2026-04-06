@@ -203,7 +203,20 @@ app.get('/feed', (req,res) => {
   res.render('pages/feed', { 
     user: req.session.user
   });
-})
+});
+
+// Once the joke creation backend is implemented, we can replace the console logs with the actual data inserts.
+app.post('/rateJoke', (req,res) => {
+  const rating = req.body.data;
+  switch (rating) {
+    case "upvote":
+      console.log("the joke was upvoted");
+      break;
+    case "downvote":
+      console.log("the joke was downvoted")
+      break;
+  }
+});
 
 // *****************************************************
 // Section 5: Start Server

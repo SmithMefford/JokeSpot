@@ -45,3 +45,17 @@ console.log("script.js loaded");
   }
 
 })();
+
+// Prevents the page from hanging when liking/disliking
+document.addEventListener("submit", async (event) => {
+  if (event.target.id === "rateJoke") {
+    event.preventDefault();
+  
+    const rating = event.submitter.value
+    const res = await fetch('/rateJoke', {
+      method: 'POST', 
+      headers: { 'Content-Type' : 'application/json' },
+      body: JSON.stringify({ data : rating})
+    });
+  }
+});
