@@ -194,13 +194,15 @@ app.get('/jokecreate', auth, (req,res) => {
 });
 
 app.get('/leaderboards', (req,res) => {
-  res.render('pages/leaderboard')
-  
-})
+  res.render('pages/leaderboard', { 
+    user: req.session.user
+  });
+});
 
 app.get('/feed', (req,res) => {
-  res.render('pages/feed')
-  
+  res.render('pages/feed', { 
+    user: req.session.user
+  });
 })
 
 // *****************************************************

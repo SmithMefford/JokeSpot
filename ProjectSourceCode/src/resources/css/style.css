@@ -24,3 +24,14 @@
   text-shadow: 0 0 8px #000000,
                0 0 15px #000000;
 }
+
+.btn-purple {
+  background-color: #6f42c1;  /* Bootstrap purple */
+  color: white;
+  border: none;
+}
+
+.btn-purple:hover {
+  background-color: #5a32a3;
+  color: white;
+}

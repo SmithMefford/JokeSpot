@@ -62,9 +62,43 @@
  </nav>
 
  <!-- Offcanvas Sidebar -->
- <div class="offcanvas offcanvas-start" tabindex="-1" id="sidebar" aria-labelledby="sidebarLabel">
-   
- </div>
+<div class="offcanvas offcanvas-start" tabindex="-1" id="sidebar" aria-labelledby="sidebarLabel">
+  
+  <div class="offcanvas-header">
+    <h5 id="sidebarLabel" class="henny-penny-regular">Menu</h5>
+    <button type="button" class="btn-close" data-bs-dismiss="offcanvas"></button>
+  </div>
+
+  <div class="offcanvas-body d-flex flex-column gap-2">
+
+    <!-- Always visible -->
+    <a href="/home" class="btn btn-primary henny-penny-regular">Home</a>
+    <a href="/feed" class="btn btn-purple btn-secondary henny-penny-regular">Feed</a>
+    <a href="/leaderboards" class="btn btn-success henny-penny-regular">Leaderboards</a>
+    <div class="text-center my-3">
+  <img 
+    src="/img/jokesPot.png" 
+    alt="Sidebar Image" 
+    class="img-fluid rounded"
+    style="max-height: 150px;"
+  >
+  </div>
+    <div class="mt-auto d-flex flex-column gap-2">{{#if user}}
+      <!-- Logged-in -->
+      <a href="/settings" class="btn btn-warning henny-penny-regular">Settings</a>
+      <a href="/logout" class="btn btn-danger henny-penny-regular">Logout</a>
+    {{else}}
+      <!-- Logged-out -->
+      <a href="/login" class="btn btn-primary henny-penny-regular">Login</a>
+      <a href="/register" class="btn btn-outline-primary henny-penny-regular">Register</a>
+    {{/if}}
+    </div>
+  </div>
+</div>
+
+    </ul>
+  </div>
+</div>
 
 </header>
 
