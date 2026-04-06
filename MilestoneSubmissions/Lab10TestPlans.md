@@ -8,6 +8,22 @@ The actual test results based on observations after executing the tests
 (needs to be done)
 
 Feature 1: Posting (Sam)  
+Description: posting will allow users to interact with the application by adding their own content to the site by creating and posting. Posts will add messages to the database to be displayed on the feed page that is shown to other users, posts will contain nonempty messages composed of text.  
+Test Environment: The test environment will happen on localhost using desktop/laptop testing with dependencies on node.js, a postgresql database, and handlebars to display and maintain application functionality. There will not be a requirement to test this application under wifi connection due to the local nature of the test server.    
+Test Cases:  
+“Hello World!” input:  
+- Expected outcome: post successfully submits to the database, gets processed onto the feed page, and appears to other users with the correct “Hello World” text in the post container  
+Empty string input:  
+- Expected outcome: Post will not post, nothing will be returned to the database and no posts will be parsed onto the feed. User will receive a message saying that they cannot post empty content and will be prompted to fill the post draft box with content before continuing.  
+Supremely long string input:  
+- Expected outcome: Post will not post, nothing will be returned to the database and no posts will be parsed onto the feed. User will receive a message saying that they can’t post content above a certain character limit (ex: 2000 characters) and will be prompted to shorten their post before they are allowed to continue.  
+Special Character input:  
+- Expected outcome: Post will be submitted to the database, will be grabbed from the database to the application, and shown on the feed page. Users will be able to correctly see special character input and characters will render correctly  
+Post with vulgar content:  
+-  Expected outcome: post will be submitted to the database, flagged as having vulgar content, and will exist within the database, on the applications end, users that have the setting for vulgar content will be able to see the post, while those who have it disabled will not be shown the post. In the fist scenario, jokes will be fed onto the feed page and shown to the users. In the second scenario, jokes will not male it onto the feed page and will exist solely in the database.  
+
+ this ensures to developers that this function works correctly, to testing engineers that any issues are flagged with error codes and can be fixed in the code, and to end users that they are able to functionally post onto this application
+
 Feature 2: Scrolling (Michael)  
 Feature 3: Admin deletion of users and cascading deletions of posts by that user (Smith)    
 test cases done by kellen and stephen  
