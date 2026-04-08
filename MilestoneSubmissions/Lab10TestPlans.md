@@ -47,4 +47,9 @@ User and jokes are removed from database on deletion
 Deleted User Cannot log back in
  - As a user, if my account is deleted, I should not be able to log into my old account, and will not be able to access the site with the old credentials recieving the error that account does not exist.
 
+Tester Information:
+An administrator-level user (One of the coders) familiar with the manage users panel
+A regular authenticated user with no admin privileges that has posted a flagged joke
+A regular authenticated user with no admin privileges
+
 test cases done by kellen and stephen  
