@@ -1,32 +1,52 @@
-<h2>Settings</h2>
 {{#if user}}
-<p>{{user.username}} settings</p>
+<h2 class="text-center mb-4 henny-penny-regular">{{user.username}} Settings</h2>
 {{/if}}
+
 <form action="/settings" method="POST">
+    <div class="checkbox-cards-container" style="display: flex; flex-wrap: wrap; gap: 20px; justify-content: center; margin-bottom: 30px;">
+        
+        <!-- Dark Mode -->
+        <div class="card" style="padding: 20px; min-width: 180px; text-align: center;">
+            <label class="switch" style="display: flex; justify-content: center; align-items: center; margin: 0 auto;">
+                <input type="checkbox" name="darkMode">
+                <span class="slider round"></span>
+            </label>
+            <div style="margin-top:10px;">Enable Dark Mode</div>
+        </div>
 
-    <div style="margin-bottom: 15px;">
-        <label>
-            <input type="checkbox" name="darkMode">
-            Enable Dark Mode
-        </label>
+        <!-- Vulgar Content -->
+        <div class="card" style="padding: 20px; min-width: 180px; text-align: center;">
+            <label class="switch" style="display: flex; justify-content: center; align-items: center; margin: 0 auto;">
+                <input type="checkbox" name="notifications">
+                <span class="slider round"></span>
+            </label>
+            <div style="margin-top:10px;">Enable Vulgar Content</div>
+        </div>
+
+        <!-- Auto Refresh -->
+        <div class="card" style="padding: 20px; min-width: 180px; text-align: center;">
+            <label class="switch" style="display: flex; justify-content: center; align-items: center; margin: 0 auto;">
+                <input type="checkbox" name="autoRefresh">
+                <span class="slider round"></span>
+            </label>
+            <div style="margin-top:10px;">Auto Refresh Jokes</div>
+        </div>
+
+        <!-- Profile Visibility -->
+        <div class="card" style="padding: 20px; min-width: 180px; text-align: center;">
+            <label class="switch" style="display: flex; justify-content: center; align-items: center; margin: 0 auto;">
+                <input type="checkbox" name="profileVisibility">
+                <span class="slider round"></span>
+            </label>
+            <div style="margin-top:10px;">Make Profile Private</div>
+        </div>
+
     </div>
 
-    <div style="margin-bottom: 15px;">
-        <label>
-            <input type="checkbox" name="notifications">
-            Enable Vulgar Content
-        </label>
+    <!-- Home Button -->
+    <div style="text-align: center; margin-bottom: 30px;">
+        <a href="/home" class="btn btn-primary btn-purple henny-penny-regular" style="font-size: 1rem; padding: 1rem 2rem;">
+            Home
+        </a>
     </div>
-
-    <div style="margin-bottom: 15px;">
-        <label>
-            <input type="checkbox" name="autoRefresh">
-            Auto Refresh Jokes
-        </label>
-    </div>
-</form> 
-<br>
-
-<form action="/home" method="GET">
-    <button type="submit">Back to Home</button>
 </form>
