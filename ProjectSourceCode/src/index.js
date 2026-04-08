@@ -139,10 +139,10 @@ app.post('/register', async (req, res) => {
     );
     req.session.user = user;
     req.session.save();
-    res.redirect('/home');
+    return res.status(200).redirect('/home');
   } catch (error) {
-    console.error(error);
-    res.render('pages/register', {
+    // console.error(error);  // removed bc makes tests hard to see
+    res.status(400).render('pages/register', {
       message: 'That account already exists!',
       error: true
     });
