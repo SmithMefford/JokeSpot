@@ -1,7 +1,7 @@
 <header>
  <nav class="navbar border-bottom">
    <div class="container-fluid">
-
+     <!-- Toggler + Brand -->
      <div class="d-flex align-items-center">
        <button
          class="navbar-toggler border-0 me-2"
@@ -26,7 +26,7 @@
        >
        <a class="navbar-brand henny-penny-regular" href="/home">JokeSpot</a>
      </div>
-
+     <!-- Profile icon -->
      {{#if user}}
          <div class="dropdown">
            <img
@@ -57,8 +57,8 @@
 
    </div>
  </nav>
-
-<div class="offcanvas offcanvas-start" tabindex="-1" id="sidebar" aria-labelledby="sidebarLabel">
+ <!-- Offcanvas Sidebar -->
+ <div class="offcanvas offcanvas-start" tabindex="-1" id="sidebar" aria-labelledby="sidebarLabel">
   
   <div class="offcanvas-header">
     <h5 id="sidebarLabel" class="henny-penny-regular">Menu</h5>
@@ -66,7 +66,7 @@
   </div>
 
   <div class="offcanvas-body d-flex flex-column gap-2">
-
+    <!-- Always visible -->
     <a href="/home" class="btn btn-primary henny-penny-regular">Home</a>
     <a href="/feed" class="btn btn-purple btn-secondary henny-penny-regular">Feed</a>
     <a href="/leaderboards" class="btn btn-success henny-penny-regular">Leaderboards</a>

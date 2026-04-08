@@ -1,28 +1,23 @@
-<h2>Home</h2>
-{{#if user}}
-<p>Welcome, {{user.username}}!</p>
-{{/if}}
+<div class="container my-5">
 
-{{#if message}}
-<p>{{message}}</p>
-{{/if}}
+    {{#if user}}
+    <h2 class="text-center mb-3 henny-penny-regular">Welcome, {{user.username}}!</h2>
+    {{/if}}
 
-<h3>Jokes</h3> 
-<ul>
-    A man walks into a bar and says ouch<br>
-    another man walks into a bar and says to the first man "Why did they put this here"
-</ul>
+    {{#if message}}
+      <p class="text-center text-success henny-penny-regular">{{message}}</p>
+    {{/if}}
 
-<div style="margin: 15px 0;">
-    <form action="/jokecreate" method="GET" style="display:inline;">
-        <button type="submit">Create Joke</button>
-    </form>
+    <h3 class="text-center mt-4 mb-4 henny-penny-regular">Jokes of the Day</h3>
 
-    <form action="/settings" method="GET" style="display:inline;">
-        <button type="submit">Settings</button>
-    </form>
+    <div class="d-flex flex-column align-items-center gap-3">
+        {{#each jokes}}
+        <div class="card text-center" style="width: 35rem; font-size: 1.25rem; padding: 1.5rem;">
+            <div class="card-body">
+                {{this}}
+            </div>
+        </div>
+        {{/each}}
+    </div>
 
-    <form action="/leaderboards" method="GET" style="display:inline;">
-        <button type="submit">Leaderboards</button>
-    </form>
 </div>
