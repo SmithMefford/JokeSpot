@@ -20,9 +20,13 @@ Supremely long string input:
 Special Character input:  
 - Expected outcome: Post will be submitted to the database, will be grabbed from the database to the application, and shown on the feed page. Users will be able to correctly see special character input and characters will render correctly  
 Post with vulgar content:  
--  Expected outcome: post will be submitted to the database, flagged as having vulgar content, and will exist within the database, on the applications end, users that have the setting for vulgar content will be able to see the post, while those who have it disabled will not be shown the post. In the fist scenario, jokes will be fed onto the feed page and shown to the users. In the second scenario, jokes will not male it onto the feed page and will exist solely in the database.  
+-  Expected outcome: post will be submitted to the database, flagged as having vulgar content, and will exist within the database, on the applications end, users that have the setting for vulgar content will be able to see the post, while those who have it disabled will be shown the post with the vulgar content censored by asterixes. In the fist scenario, jokes will be fed onto the feed page and shown to the users. In the second scenario, jokes will not male it onto the feed page and will exist solely in the database.  
 
  this ensures to developers that this function works correctly, to testing engineers that any issues are flagged with error codes and can be fixed in the code, and to end users that they are able to functionally post onto this application
+
+Test Data: to test this feature there will need to be users with and without superuser permissions, the database will need to be initialized and ready to receive content, and the page will need to be formatted so that users can create jokes.  
+
+Tester information: A superuser with administrator privelages, a regular user that has an authenticated account  
 
 Feature 2: Scrolling (Michael)  
 
