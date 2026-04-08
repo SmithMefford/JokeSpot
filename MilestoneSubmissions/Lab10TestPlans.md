@@ -29,6 +29,21 @@ Test Data: to test this feature there will need to be users with and without sup
 Tester information: A superuser with administrator privelages, a regular user that has an authenticated account  
 
 Feature 2: Scrolling (Michael)  
+Description: Scrolling will allow users to navigate through the main feed of jokes dynamically. Because the feed is a simple, scrollable page, this will serve as the primary way for users to view and interact with jokes, similar to platforms like X and Instagram.
+
+Test Environment: The test environment will happen on localhost using desktop/laptop testing with dependencies on node.js, a postgresql database, and handlebars to display and maintain application functionality. There will not be a requirement to test this application under wifi connection due to the local nature of the test server.
+
+Test Data: A database pre-populated with a significant number of jokes (e.g., 30+ posts) to ensure the generated feed extends well beyond the initial viewport height, forcing the browser to create a scrollbar and allowing scrolling mechanics to be tested.
+
+Test Cases:
+- Standard Feed Loading:
+Expected outcome: When the user navigates to the feed page, the initial set of jokes is retrieved from the database and renders correctly in their respective Handlebars containers. A vertical scrollbar appears on the right side of the window because the content exceeds the screen height.
+- Continuous Scrolling (Content Navigation):
+Expected outcome: As the user scrolls down the page, the screen moves smoothly. If the application uses pagination or infinite scrolling, reaching the bottom of the page will successfully trigger the database to fetch and display the next batch of jokes seamlessly without the UI breaking or jumping.
+- End of Feed Reached:
+Expected outcome: When the user scrolls past the very last joke stored in the database, the scrolling successfully terminates. The user should not be able to scroll into empty white space, and a friendly UI message (e.g., "You're all caught up!" or "No more jokes to show") should be displayed at the bottom.
+- Empty Feed Handling:
+Expected outcome: If the database is completely cleared of all jokes, navigating to the feed page will not cause a crash. The page will be static (no scrollbar), and a placeholder message will prompt the user to be the first to post a joke.  
 
 
 Feature 3: Admin deletion of users and cascading deletions of posts by that user (Smith):
