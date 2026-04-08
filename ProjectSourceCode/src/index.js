@@ -77,6 +77,11 @@ const auth = (req, res, next) => {
 // Section 4: Routes
 // *****************************************************
 
+// Dummy api to test that server.spec connects to index
+app.get('/welcome', (req, res) => {
+  res.json({status: 'success', message: 'Welcome!'});
+});
+
 // Redirect root to login
 app.get('/', (req, res) => {
   res.redirect('/home');
@@ -323,6 +328,6 @@ app.get('/loadJokes', async (req,res) => {
 // Section 5: Start Server
 // *****************************************************
 
-app.listen(3000, '0.0.0.0', () => {
+module.exports = app.listen(3000, '0.0.0.0', () => {
   console.log('Server listening on port 3000');
 });
