@@ -29,4 +29,18 @@ describe('Server!', () => {
 
 // *********************** TODO: WRITE 2 UNIT TESTCASES **************************
 
+describe('Testing Register API', () => {
+  it('positive : /register', done => {
+    chai
+      .request(server)
+      .post('/register')
+      .send({username: 'John Doe', password: 'TestAccount@1'})
+      .end((err, res) => {
+        expect(res).to.have.status(200);
+        expect(res.body.message).to.equals('Success');
+        done();
+      });
+  });
+});
+
 // ********************************************************************************

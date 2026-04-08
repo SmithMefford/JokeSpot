@@ -137,6 +137,7 @@ app.post('/register', async (req, res) => {
       'SELECT * FROM users WHERE username = $1',
       [req.body.username]
     );
+    res.json({status: 'success', message: 'Success'});
     req.session.user = user;
     req.session.save();
     res.redirect('/home');
