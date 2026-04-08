@@ -112,9 +112,21 @@ app.get('/home', (req, res) => {
 app.post('/register', async (req, res) => {
   try {
     const hash = await bcrypt.hash(req.body.password, 10);
+    
+    // Randomly assign a default profile picture upon registration
+    const defaultAvatars = [
+      '/img/default_profile_1.png',
+      '/img/default_profile_2.png',
+      '/img/default_profile_3.png',
+      '/img/default_profile_4.png',
+      '/img/default_profile_5.png'
+    ];
+    const randomAvatar = defaultAvatars[Math.floor(Math.random() * defaultAvatars.length)];
+
+    // Updated insert statement to include profile_photo_url
     await db.none(
-      'INSERT INTO users(username, password) VALUES($1, $2)',
-      [req.body.username, hash]
+      'INSERT INTO users(username, password, profile_photo_url) VALUES($1, $2, $3)',
+      [req.body.username, hash, randomAvatar]
     );
     const user = await db.one(
       'SELECT * FROM users WHERE username = $1',
@@ -204,6 +216,83 @@ app.get('/feed', (req,res) => {
     user: req.session.user
   });
 });
+
+// *****************************************************
+// Section 4.1: Profile Routes
+// *****************************************************
+
+// Profile page (Dynamic based on username parameter)
+app.get('/profile/:username?', auth, async (req, res) => {
+  try {
+    // Determine if user is viewing their own profile or someone else's
+    const targetUsername = req.params.username || req.session.user.username;
+    const isOwner = targetUsername === req.session.user.username;
+
+    // Fetch user data from the database
+    const profileUser = await db.oneOrNone('SELECT * FROM users WHERE username = $1', [targetUsername]);
+
+    if (!profileUser) {
+      return res.redirect('/home');
+    }
+
+    // Hide stats if the account is private and the viewer is not the owner
+    const isPrivateView = profileUser.is_private && !isOwner;
+
+    // Placeholder stats (To be updated with real database queries later)
+    const average_rating = 4.5;
+    const rank = 10;
+    const rating_title = "Open Mic Rookie";
+
+    res.render('pages/profile', {
+      display_name: profileUser.display_name || profileUser.username,
+      username: profileUser.username,
+      profile_photo_url: profileUser.profile_photo_url,
+      is_private_view: isPrivateView,
+      is_owner: isOwner,
+      average_rating,
+      rank,
+      rating_title
+    });
+  } catch (error) {
+    console.error(error);
+    res.redirect('/home');
+  }
+});
+
+// Profile Edit page (GET)
+app.get('/profile/edit', auth, async (req, res) => {
+  try {
+    const user = await db.one('SELECT * FROM users WHERE username = $1', [req.session.user.username]);
+    res.render('pages/profile-edit', {
+      user: user
+    });
+  } catch (error) {
+    console.error(error);
+    res.redirect('/profile');
+  }
+});
+
+// Profile Edit page (POST) - Updates database
+app.post('/profile/edit', auth, async (req, res) => {
+  try {
+    // Checkboxes send 'on' if checked, map this to a boolean
+    const isPrivate = req.body.is_private === 'on';
+    
+    await db.none(
+      'UPDATE users SET display_name = $1, profile_photo_url = $2, is_private = $3 WHERE username = $4',
+      [req.body.display_name, req.body.profile_photo_url, isPrivate, req.session.user.username]
+    );
+    
+    res.redirect('/profile');
+  } catch (error) {
+    console.error(error);
+    res.redirect('/profile/edit');
+  }
+});
+
+// *****************************************************
+// Section 4.2: Interaction & Post Routes
+// *****************************************************
 
 // Once the joke creation backend is implemented, we can replace the console logs with the actual data inserts.
 app.post('/rateJoke', (req,res) => {

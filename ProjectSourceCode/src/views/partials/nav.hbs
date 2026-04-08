@@ -1,8 +1,6 @@
-<!-- TODO: WORK IN PROGRESS -->
 <header>
  <nav class="navbar border-bottom">
    <div class="container-fluid">
-
      <!-- Toggler + Brand -->
      <div class="d-flex align-items-center">
        <button
@@ -25,16 +23,15 @@
              role="button"
              aria-expanded="false"
              style="cursor:pointer; object-fit:cover;"
-           >
+       >
        <a class="navbar-brand henny-penny-regular" href="/home">JokeSpot</a>
      </div>
-
      <!-- Profile icon -->
      {{#if user}}
          <div class="dropdown">
            <img
              id="profile-icon"
-             src="/img/happyFace.png"
+             src="{{user.profile_photo_url}}"
              alt="Profile"
              width="40"
              height="40"
@@ -47,7 +44,7 @@
            <ul class="dropdown-menu dropdown-menu-end">
              <li><span class="dropdown-item-text text-muted">{{user.username}}</span></li>
              <li><hr class="dropdown-divider"></li>
-             <li><a class="dropdown-item" href="/#">Profile</a></li>
+             <li><a class="dropdown-item" href="/profile">Profile</a></li>
              <li><hr class="dropdown-divider"></li>
              <li><a class="dropdown-item" href="/settings">Settings</a></li>
              <li><hr class="dropdown-divider"></li>
@@ -60,9 +57,8 @@
 
    </div>
  </nav>
-
  <!-- Offcanvas Sidebar -->
-<div class="offcanvas offcanvas-start" tabindex="-1" id="sidebar" aria-labelledby="sidebarLabel">
+ <div class="offcanvas offcanvas-start" tabindex="-1" id="sidebar" aria-labelledby="sidebarLabel">
   
   <div class="offcanvas-header">
     <h5 id="sidebarLabel" class="henny-penny-regular">Menu</h5>
@@ -70,7 +66,6 @@
   </div>
 
   <div class="offcanvas-body d-flex flex-column gap-2">
-
     <!-- Always visible -->
     <a href="/home" class="btn btn-primary henny-penny-regular">Home</a>
     <a href="/feed" class="btn btn-purple btn-secondary henny-penny-regular">Feed</a>
@@ -83,20 +78,16 @@
     style="max-height: 150px;"
   >
   </div>
-    <div class="mt-auto d-flex flex-column gap-2">{{#if user}}
-      <!-- Logged-in -->
+    <div class="mt-auto d-flex flex-column gap-2">
+    {{#if user}}
+      <a href="/profile" class="btn btn-info henny-penny-regular">Profile</a>
       <a href="/settings" class="btn btn-warning henny-penny-regular">Settings</a>
       <a href="/logout" class="btn btn-danger henny-penny-regular">Logout</a>
     {{else}}
-      <!-- Logged-out -->
       <a href="/login" class="btn btn-primary henny-penny-regular">Login</a>
       <a href="/register" class="btn btn-outline-primary henny-penny-regular">Register</a>
     {{/if}}
     </div>
-  </div>
-</div>
-
-    </ul>
   </div>
 </div>
 
