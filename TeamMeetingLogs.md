@@ -26,3 +26,26 @@ Temp ideas
 - categorize with tags
 - custom/random feed
 - joke's pot
+
+## Meeting 2:  
+- showed TA the site, seemed good with everything and said that the team was far ahead of other groups, to keep working on features. Said credit would be given for this week and next week
+Decisions made
+- none
+Alternative actions discussed:
+- none
+Follow up:
+-N/A
+
+## Meeting 3
+- Showed TA progress on the website including the sidebar, profile, settings, feed, leaderboard, and any content that was either new or that he had not been shown
+Decisions Made:  
+- Search bar by next meeting
+- working databse by next meeting
+- Profile editing by next meeting
+- Working leaderboards by end of the project
+- fill joke content with actual databse information
+- round out all the rest of the front end  
+Altenative actions  
+- N/A
+Follow up:  
+- decisions should be done by next meeting
