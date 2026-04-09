@@ -69,3 +69,28 @@ describe('Testing Registration API', () => {
   });
 });
 // ********************************************************************************
+// Testing the login api
+describe('Testing LoginI', () => {
+  // Positive: login to test user
+  it('positive: /login', done => {
+    chai
+      .request(server)
+      .post('/login')
+      .send({username: 'the_real_admin', password: '$2a$10$E.Nq8oyJqsqC45g.38Rkj.Wvgya2p1PBH/LM4F1scBxXgbTrRlASG'})
+      .end((err, res) => {
+        expect(res).to.have.status(200);
+        done();
+      });
+  });
+  // Negative: account doesn't exist
+  it('negative: /login', done => {
+    chai
+      .request(server)
+      .post('/login')
+      .send({username: '', password: 'a'})
+      .end((err, res) => {
+        expect(res).to.have.status(400);
+        done();
+      });
+  });
+});
