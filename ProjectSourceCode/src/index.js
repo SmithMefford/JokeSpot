@@ -157,7 +157,7 @@ app.post('/login', async (req, res) => {
       [req.body.username]
     );
     if (!user) {
-      return res.render('pages/login', {
+      return res.status(400).render('pages/login', {
         message: 'No account found',
         error: true
       });
@@ -165,7 +165,7 @@ app.post('/login', async (req, res) => {
 
     const match = await bcrypt.compare(req.body.password, user.password);
     if (!match) {
-      return res.render('pages/login', {
+      return res.status(400).render('pages/login', {
         message: 'Incorrect username or password.',
         error: true
       });
@@ -173,10 +173,10 @@ app.post('/login', async (req, res) => {
 
     req.session.user = user;
     req.session.save();
-    res.redirect('/home');
+    res.status(200).redirect('/home');
   } catch (error) {
-    console.error(error);
-    res.redirect('/login');
+    //console.error(error);
+    res.status(400).redirect('/login');
   }
 });
 
@@ -185,9 +185,9 @@ app.get('/logout', auth, (req, res) => {
   req.session.destroy((err) => {
     if (err) {
       console.log(err);  // log possible error
-      return res.redirect('/home');  // stay on the home page (could also display fail message)
+      return res.status(400).redirect('/home');  // stay on the home page (could also display fail message)
     }
-    res.render('pages/login', {  // sends you to login upon logout
+    res.status(200).render('pages/login', {  // sends you to login upon logout
       message: "Logged out successfully!",
       error: false
     });
@@ -268,12 +268,12 @@ app.get('/profile/:username?', auth, async (req, res) => {
 app.get('/profile/edit', auth, async (req, res) => {
   try {
     const user = await db.one('SELECT * FROM users WHERE username = $1', [req.session.user.username]);
-    res.render('pages/profile-edit', {
+    res.status(200).render('pages/profile-edit', {
       user: user
     });
   } catch (error) {
     console.error(error);
-    res.redirect('/profile');
+    res.status(400).redirect('/profile');
   }
 });
 
