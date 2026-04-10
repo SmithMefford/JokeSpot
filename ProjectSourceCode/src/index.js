@@ -19,6 +19,9 @@ const hbs = handlebars.create({
   extname: 'hbs',
   layoutsDir: path.join(__dirname, 'views', 'layouts'),
   partialsDir: path.join(__dirname, 'views', 'partials'),
+  helpers: {
+    eq: (a, b) => a === b
+  }
 });
 
 app.engine('hbs', hbs.engine);
@@ -73,6 +76,19 @@ const auth = (req, res, next) => {
   next();
 };
 
+const onlyUser0 = (req, res, next) => {
+  if (!req.session.user) {
+    return res.redirect('/home');
+  }
+  if (req.session.user.username !== 'user0') {
+    return res.status(403).render('pages/403', {
+      message: '403: Access denied.',
+      error: true
+    });
+  }
+  next();
+};
+
 // *****************************************************
 // Section 4: Routes
 // *****************************************************
@@ -112,6 +128,86 @@ app.get('/home', (req, res) => {
     error: false,
     jokes   // <-- pass jokes array to Handlebars
   });
+});
+
+app.get('/admin', onlyUser0, async (req, res) => {
+  try {
+    const reports = await db.any(`
+      SELECT jr.id, jr.joke_id, jr.reason, jr.details, jr.created_at, jr.reviewed,
+             j.content, j.author
+      FROM joke_reports jr
+      JOIN jokes j ON jr.joke_id = j.id
+      WHERE jr.reviewed = FALSE
+      ORDER BY jr.created_at DESC
+    `);
+
+    const flaggedUsers = await db.any(`
+      SELECT j.author, COUNT(jr.id) AS report_count,
+             MAX(jr.created_at) AS latest_report,
+             (SELECT jr2.reason FROM joke_reports jr2
+              JOIN jokes j2 ON jr2.joke_id = j2.id
+              WHERE j2.author = j.author
+              ORDER BY jr2.created_at DESC LIMIT 1) AS latest_reason
+      FROM joke_reports jr
+      JOIN jokes j ON jr.joke_id = j.id
+      GROUP BY j.author
+      ORDER BY report_count DESC
+    `);
+
+    const pendingCount = await db.one(`
+      SELECT COUNT(*) FROM joke_reports WHERE reviewed = FALSE
+    `);
+
+    const flaggedCount = await db.one(`
+      SELECT COUNT(DISTINCT j.author) AS count
+      FROM joke_reports jr
+      JOIN jokes j ON jr.joke_id = j.id
+    `);
+
+    const reviewedToday = await db.one(`
+      SELECT COUNT(*) FROM joke_reports
+      WHERE reviewed = TRUE
+      AND created_at >= CURRENT_DATE
+    `);
+
+    res.render('pages/admin', {
+      user: req.session.user,
+      reports,
+      flaggedUsers,
+      pendingCount: pendingCount.count,
+      flaggedCount: flaggedCount.count,
+      reviewedToday: reviewedToday.count
+    });
+  } catch (error) {
+    console.error(error);
+    res.redirect('/home');
+  }
+});
+
+app.post('/admin/dismiss/:reportId', onlyUser0, async (req, res) => {
+  try {
+    await db.none(
+      'UPDATE joke_reports SET reviewed = TRUE WHERE id = $1',
+      [req.params.reportId]
+    );
+    res.redirect('/admin');
+  } catch (error) {
+    console.error(error);
+    res.redirect('/admin');
+  }
+});
+
+app.post('/admin/delete/:jokeId', onlyUser0, async (req, res) => {
+  try {
+    await db.none(
+      'DELETE FROM jokes WHERE id = $1',
+      [req.params.jokeId]
+    );
+    res.redirect('/admin');
+  } catch (error) {
+    console.error(error);
+    res.redirect('/admin');
+  }
 });
 
 app.post('/register', async (req, res) => {

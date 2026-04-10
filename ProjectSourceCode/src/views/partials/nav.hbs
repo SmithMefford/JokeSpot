@@ -70,6 +70,11 @@
     <a href="/home" class="btn btn-primary henny-penny-regular">Home</a>
     <a href="/feed" class="btn btn-purple btn-secondary henny-penny-regular">Feed</a>
     <a href="/leaderboards" class="btn btn-success henny-penny-regular">Leaderboards</a>
+    {{#if user}}
+      {{#if (eq user.username "user0")}}
+        <a href="/admin" class="btn btn-danger henny-penny-regular">Administrator Panel</a>
+      {{/if}}
+    {{/if}}
     <div class="text-center my-3">
   <img 
     src="/img/jokesPot.png" 

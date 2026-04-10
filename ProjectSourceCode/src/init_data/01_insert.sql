@@ -56,3 +56,17 @@ VALUES
     ('user0', 'Why did the invisible man turn down the job offer? He couldn''t see himself doing it.', 'wordplay,puns'),
     ('user0', 'What do Alexander the Great and Winnie the Pooh have in common? Same middle name.', 'history,wordplay'),
     ('user0', 'A man walks into a library and asks for books about paranoia. The librarian whispers, "They''re right behind you."', 'books,wordplay');
+
+INSERT INTO joke_reports 
+    (joke_id, reporter_username, reason, details) 
+VALUES
+    (1, 'user0', 'offensive', 'This joke is inappropriate and offensive to scientists.'),
+    (2, 'user0', 'spam', 'This joke has been posted multiple times.'),
+    (3, 'user0', 'other', 'This does not qualify as a joke.'),
+    (4, 'user0', 'misinformation', 'The punchline contains false information.'),
+    (5, 'user0', 'offensive', 'Contains language that is hurtful to certain groups.'),
+    (6, 'user0', 'spam', 'Repeated joke from another user.'),
+    (7, 'user0', 'other', 'Low quality content, not funny.'),
+    (8, 'user0', 'offensive', 'Joke makes fun of a specific group of people.'),
+    (9, 'user0', 'spam', 'This exact joke appears multiple times in the feed.'),
+    (10, 'user0', 'misinformation', 'The premise of this joke is factually incorrect.');
