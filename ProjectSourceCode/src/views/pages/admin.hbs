@@ -1,0 +1,81 @@
+<div class="container py-4">
+  <h2>Admin panel</h2>
+
+  <div class="row mt-4 g-3">
+    <div class="col-md-4">
+      <div class="card text-center p-3">
+        <div class="text-muted small">Pending reports</div>
+        <div class="fs-2 fw-500 text-danger">{{pendingCount}}</div>
+      </div>
+    </div>
+    <div class="col-md-4">
+      <div class="card text-center p-3">
+        <div class="text-muted small">Flagged users</div>
+        <div class="fs-2 fw-500 text-warning">{{flaggedCount}}</div>
+      </div>
+    </div>
+    <div class="col-md-4">
+      <div class="card text-center p-3">
+        <div class="text-muted small">Reviewed today</div>
+        <div class="fs-2 fw-500">{{reviewedToday}}</div>
+      </div>
+    </div>
+  </div>
+
+  <h4 class="mt-4">Reported jokes</h4>
+  <table class="table table-bordered mt-2">
+    <thead>
+      <tr>
+        <th>Joke ID</th>
+        <th>Content</th>
+        <th>Author</th>
+        <th>Reason</th>
+        <th>Details</th>
+        <th>Reported at</th>
+        <th>Actions</th>
+      </tr>
+    </thead>
+    <tbody>
+      {{#each reports}}
+      <tr>
+        <td>{{this.joke_id}}</td>
+        <td>{{this.content}}</td>
+        <td>{{this.author}}</td>
+        <td>{{this.reason}}</td>
+        <td>{{this.details}}</td>
+        <td>{{this.created_at}}</td>
+        <td style="display: flex; gap: 8px; align-items: center;">
+        <form method="POST" action="/admin/dismiss/{{this.id}}">
+            <button type="submit" class="btn btn-sm btn-secondary">Dismiss</button>
+        </form>
+        <form method="POST" action="/admin/delete/{{this.joke_id}}">
+            <button type="submit" class="btn btn-sm btn-danger">Delete</button>
+        </form>
+        </td>
+      </tr>
+      {{/each}}
+    </tbody>
+  </table>
+
+  <h4 class="mt-4">Flagged accounts</h4>
+  <table class="table table-bordered mt-2">
+    <thead>
+      <tr>
+        <th>Username</th>
+        <th>Total reports</th>
+        <th>Latest reason</th>
+        <th>Most recent report</th>
+      </tr>
+    </thead>
+    <tbody>
+      {{#each flaggedUsers}}
+      <tr>
+        <td>{{this.author}}</td>
+        <td>{{this.report_count}}</td>
+        <td>{{this.latest_reason}}</td>
+        <td>{{this.latest_report}}</td>
+      </tr>
+      {{/each}}
+    </tbody>
+  </table>
+</div>
