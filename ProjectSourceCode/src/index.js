@@ -398,12 +398,16 @@ app.post('/profile/edit', auth, async (req, res) => {
 // Once the joke creation backend is implemented, we can replace the console logs with the actual data inserts.
 app.post('/rateJoke', (req,res) => {
   const rating = req.body.data;
+  console.log(rating)
   switch (rating) {
     case "upvote":
       console.log("the joke was upvoted");
       break;
     case "downvote":
       console.log("the joke was downvoted")
+      break;
+    default:
+      console.log("broken")
       break;
   }
 });

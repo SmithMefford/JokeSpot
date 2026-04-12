@@ -51,8 +51,10 @@ document.addEventListener("submit", async (event) => {
   console.log(event.target.id)
   if (event.target.id === "rateJoke") {
     event.preventDefault();
-  
-    const rating = event.submitter.value
+
+    const data = new FormData(event.target);
+    const rating = data.get('rating');
+    console.log(rating)
     const res = await fetch('/rateJoke', {
       method: 'POST', 
       headers: { 'Content-Type' : 'application/json' },

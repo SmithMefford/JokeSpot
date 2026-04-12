@@ -90,6 +90,14 @@ input:checked + .slider:before {
   transform: translateX(26px);
 }
 
+input[type="radio"] {
+  -webkit-appearance: none;
+}
+
+input[type="radio"]:checked + label {
+  color: red;
+}
+
 /* Rounded sliders */
 .slider.round {
   border-radius: 34px;
