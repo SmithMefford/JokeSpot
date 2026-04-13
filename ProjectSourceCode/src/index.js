@@ -312,10 +312,15 @@ app.get('/leaderboards', (req,res) => {
   });
 });
 
-app.get('/feed', (req,res) => {
-  res.render('pages/feed', { 
-    user: req.session.user
-  });
+app.get('/feed', auth, (req,res) => {
+  try {
+    res.render('pages/feed', { 
+      user: req.session.user,
+      error: false
+    });
+  } catch (err) {
+    res.redirect('/login');
+  }
 });
 
 // *****************************************************
@@ -408,12 +413,19 @@ app.post('/rateJoke', (req,res) => {
   }
 });
 
+app.post('/reportJoke', (req, res) => {
+  try {
+    console.log(req.body.data);
+  } catch(err) {
+    res.status(500).send("Failed to report joke");
+  }
+});
+
 // Prepares the partial and then sends it to the client to be inserted dynamically
 // Later, we can modify this to retrieve data from the DB, populate the post partial,
 // then send it back to the client.
 app.get('/loadJokes', async (req,res) => {
   try {
-    
     res.render('partials/post.hbs', { layout: false });
   } catch (err) {
     res.status(500).send("Failed to load post")
