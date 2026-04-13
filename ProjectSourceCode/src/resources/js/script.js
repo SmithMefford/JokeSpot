@@ -49,12 +49,13 @@ console.log("script.js loaded");
 // Allows to call api routes without refreshing the page  
 document.addEventListener("submit", async (event) => {
   const e = event.target;
+  //console.log(e)
   switch (e.id) {
     case "rateJoke":
       event.preventDefault();
 
       const rateData = new FormData(event.target);
-      const rating = rateData.get('rating');
+      const rating = rateData.getAll('rate')[0];
       console.log(rating)
       await fetch('/rateJoke', {
         method: 'POST', 
@@ -119,3 +120,13 @@ document.addEventListener("DOMContentLoaded", async () => {
       }
   }
 });
+
+function switchInteraction(option) {
+  const groupName = option.name;
+  const interactions = document.getElementsByName(groupName);
+  interactions.forEach((item) => {
+    if (item !== option) item.checked = false;
+  });
+
+  option.form.requestSubmit();
+}

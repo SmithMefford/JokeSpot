@@ -20,15 +20,17 @@
                             <form action="/rateJoke" method="POST" id="rateJoke">
                                 {{!-- <button type="submit" name="rate" value="upvote" onclick="alert('You liked this post!')" style="font-size: x-large;">😂</button>
                                 <button type="submit" name="rate" value="downvote" onclick="alert('You disliked this post!')" style="font-size: x-large;">😢</button> --}}
-                        <input type="radio" id="like" name="rating" value="upvote" onchange="this.form.querySelector('#secret_submit').click()">
-                        <label for="like" style="font-size: x-large;">
-                            <i class="fa-solid fa-heart"></i>
-                        </label>
-                        <input type="radio" id="dislike" name="rating" value="downvote" onchange="this.form.querySelector('#secret_submit').click()">
-                        <label for="dislike" style="font-size: x-large;">
-                            <i class="fa-solid fa-heart-crack"></i>
-                        </label>
-                        <button id="secret_submit" type="submit" style="display: none"></button>
+                                {{!-- <input type="radio" id="like" name="rating" value="upvote" onchange="this.form.querySelector('#secret_submit').click()"> --}}
+                                <input type="checkbox" id="like" name="rate" value="upvote" onclick="switchInteraction(this)">
+                                <label for="like" style="font-size: x-large;">
+                                    <i class="fa-solid fa-heart"></i>
+                                </label>
+                                {{!-- <input type="radio" id="dislike" name="rating" value="downvote" onchange="this.form.querySelector('#secret_submit').click()"> --}}
+                                <input type="checkbox" id="dislike" name="rate" value="downvote" onclick="switchInteraction(this)">
+                                <label for="dislike" style="font-size: x-large;">
+                                    <i class="fa-solid fa-heart-crack"></i>
+                                </label>
+                                <button id="secret_submit" type="submit" style="display: none"></button>
                             </form>
                         </div>
                         <div class="col-6 d-flex justify-content-end align-items-center">

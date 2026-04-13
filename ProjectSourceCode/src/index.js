@@ -412,7 +412,7 @@ app.post('/rateJoke', (req,res) => {
       console.log("the joke was downvoted")
       break;
     default:
-      console.log("broken")
+      console.log("no interaction with the joke")
       break;
   }
 });
