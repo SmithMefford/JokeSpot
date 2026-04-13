@@ -48,25 +48,74 @@ console.log("script.js loaded");
 
 // Allows to call api routes without refreshing the page  
 document.addEventListener("submit", async (event) => {
-  console.log(event.target.id)
-  if (event.target.id === "rateJoke") {
-    event.preventDefault();
+  const e = event.target;
+  switch (e.id) {
+    case "rateJoke":
+      event.preventDefault();
 
-    const data = new FormData(event.target);
-    const rating = data.get('rating');
-    console.log(rating)
-    const res = await fetch('/rateJoke', {
-      method: 'POST', 
-      headers: { 'Content-Type' : 'application/json' },
-      body: JSON.stringify({ data : rating})
-    });
-  } else if (event.target.id === "loadJokes") {
-    event.preventDefault();
+      const rateData = new FormData(event.target);
+      const rating = rateData.get('rating');
+      console.log(rating)
+      await fetch('/rateJoke', {
+        method: 'POST', 
+        headers: { 'Content-Type' : 'application/json' },
+        body: JSON.stringify({ data : rating})
+      });
+      break;
+    case "loadJokes":
+      event.preventDefault();
 
-    for (let i = 0; i < 6; i++) {
-      const res = await fetch('/loadJokes');
-      const post = await res.text();
-      document.getElementById('feedBox').innerHTML += post;
-    }
+      for (let i = 0; i < 6; i++) {
+        const res = await fetch('/loadJokes');
+        const post = await res.text();
+        document.getElementById('feedBox').innerHTML += post;
+      }
+      break;
+    case "reportJoke":
+      event.preventDefault();
+      console.log("test")
+      const formData = new FormData(e)
+      const data = Object.fromEntries(formData.entries())
+      const reportElement = e.parentElement.parentElement.parentElement; // The top of the modal
+      const reportForm = bootstrap.Modal.getOrCreateInstance(reportElement);
+      reportForm.hide(); // Hide the modal
+      await fetch('/reportJoke', {
+        method: 'POST', 
+        headers: { 'Content-Type' : 'application/json' },
+        body: JSON.stringify({ data : data})
+      });
+
+
+      break;
+  }
+  // if (event.target.id === "rateJoke") {
+  //   event.preventDefault();
+  
+  //   const rating = event.submitter.value
+  //   const res = await fetch('/rateJoke', {
+  //     method: 'POST', 
+  //     headers: { 'Content-Type' : 'application/json' },
+  //     body: JSON.stringify({ data : rating})
+  //   });
+  // } else if (event.target.id === "loadJokes") {
+  //   event.preventDefault();
+
+  //   for (let i = 0; i < 6; i++) {
+  //     const res = await fetch('/loadJokes');
+  //     const post = await res.text();
+  //     document.getElementById('feedBox').innerHTML += post;
+  //   }
+  // } 
+});
+
+// Check if a certain element was loaded
+document.addEventListener("DOMContentLoaded", async () => {
+    const target = document.getElementById("feed_page");
+    if (target) {
+      for (let i = 0; i < 9; i++) {
+        const res = await fetch('/loadJokes');
+        const post = await res.text();
+        document.getElementById('feedBox').innerHTML += post;
+      }
   }
 });
