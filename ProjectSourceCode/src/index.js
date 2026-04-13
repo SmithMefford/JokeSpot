@@ -10,6 +10,7 @@ const pgp = require('pg-promise')();
 const bodyParser = require('body-parser');
 const session = require('express-session');
 const bcrypt = require('bcryptjs');
+const multer = require('multer'); // For profile picture uploads
 
 // *****************************************************
 // Section 2: Configure Handlebars & Database
@@ -35,6 +36,18 @@ app.use('/css', express.static(path.join(__dirname, 'resources', 'css')));
 app.use('/js', express.static(path.join(__dirname, 'resources', 'js')));
 app.use('/img', express.static(path.join(__dirname, 'resources', 'img')));
 
+// Set up Multer for image uploads
+const storage = multer.diskStorage({
+  destination: function (req, file, cb) {
+    cb(null, path.join(__dirname, 'resources', 'img')); 
+  },
+  filename: function (req, file, cb) {
+    const ext = path.extname(file.originalname);
+    cb(null, req.session.user.username + '-' + Date.now() + ext);
+  }
+});
+const upload = multer({ storage: storage });
+
 // Session setup
 app.use(
   session({
@@ -50,11 +63,11 @@ app.use((req, res, next) => {
 
 // Database config
 const dbConfig = {
-  host: 'db',
+  host: 'localhost',
   port: 5432,
-  database: process.env.POSTGRES_DB,
-  user: process.env.POSTGRES_USER,
-  password: process.env.POSTGRES_PASSWORD,
+  database: process.env.POSTGRES_DB || 'jokespot',
+  user: process.env.POSTGRES_USER || 'postgres',
+  password: process.env.POSTGRES_PASSWORD || 'pwd',
 };
 
 const db = pgp(dbConfig);
@@ -119,18 +132,16 @@ app.get('/register', (req, res) => {
 
 // Home page (protected)
 app.get('/home', (req, res) => {
-  //array of jokes that can be coded from the database for joke of the day
   const jokes = [
     "My IQ test finally came back! My score was negative.",
     "A man walks into a bar and says, 'Ouch!'"
   ];
-  //"Another man walks into a bar and says, 'Why did they put this here?'"
 
   res.render('pages/home', {
     user: res.locals.user,
     message: 'Welcome to JokeSpot!',
     error: false,
-    jokes   // <-- pass jokes array to Handlebars
+    jokes   
   });
 });
 
@@ -218,7 +229,6 @@ app.post('/register', async (req, res) => {
   try {
     const hash = await bcrypt.hash(req.body.password, 10);
     
-    // Randomly assign a default profile picture upon registration
     const defaultAvatars = [
       '/img/default_profile_1.png',
       '/img/default_profile_2.png',
@@ -228,7 +238,6 @@ app.post('/register', async (req, res) => {
     ];
     const randomAvatar = defaultAvatars[Math.floor(Math.random() * defaultAvatars.length)];
 
-    // Updated insert statement to include profile_photo_url
     await db.none(
       'INSERT INTO users(username, password, profile_photo_url) VALUES($1, $2, $3)',
       [req.body.username, hash, randomAvatar]
@@ -241,7 +250,6 @@ app.post('/register', async (req, res) => {
     req.session.save();
     return res.status(200).redirect('/home');
   } catch (error) {
-    // console.error(error);  // removed bc makes tests hard to see
     res.status(400).render('pages/register', {
       message: 'That account already exists!',
       error: true
@@ -249,7 +257,6 @@ app.post('/register', async (req, res) => {
   }
 });
 
-// Login POST
 app.post('/login', async (req, res) => {
   try {
     const user = await db.oneOrNone(
@@ -275,19 +282,17 @@ app.post('/login', async (req, res) => {
     req.session.save();
     res.status(200).redirect('/home');
   } catch (error) {
-    //console.error(error);
     res.status(400).redirect('/login');
   }
 });
 
-// Logout
 app.get('/logout', auth, (req, res) => {
   req.session.destroy((err) => {
     if (err) {
-      console.log(err);  // log possible error
-      return res.status(400).redirect('/home');  // stay on the home page (could also display fail message)
+      console.log(err);  
+      return res.status(400).redirect('/home');  
     }
-    res.status(200).render('pages/login', {  // sends you to login upon logout
+    res.status(200).render('pages/login', {  
       message: "Logged out successfully!",
       error: false
     });
@@ -317,31 +322,6 @@ app.get('/settings', auth, async (req, res) => {
       message: 'Error loading settings',
       error: true
     });
-  }
-});
-
-app.get('/jokecreate', auth, (req,res) => {
-  res.render('pages/jokecreate', {
-    user: res.locals.user,
-    message: 'post your joke!',
-    error: false
-  });
-});
-
-app.get('/leaderboards', (req,res) => {
-  res.render('pages/leaderboard', { 
-    user: res.locals.user
-  });
-});
-
-app.get('/feed', auth, (req,res) => {
-  try {
-    res.render('pages/feed', { 
-      user: res.locals.user,
-      error: false
-    });
-  } catch (err) {
-    res.redirect('/login');
   }
 });
 
@@ -384,30 +364,61 @@ app.post('/settings', auth, async (req, res) => {
 // Section 4.1: Profile Routes
 // *****************************************************
 
-// Profile page (Dynamic based on username parameter)
+// EDIT ROUTES MOVED TO THE TOP TO PREVENT EXPRESS ROUTING CONFLICTS
+app.get('/profile/edit', auth, async (req, res) => {
+  try {
+    const user = await db.one('SELECT * FROM users WHERE username = $1', [req.session.user.username]);
+    res.status(200).render('pages/profile-edit', {
+      user: user
+    });
+  } catch (error) {
+    console.error(error);
+    res.status(400).redirect('/profile');
+  }
+});
+
+app.post('/profile/edit', auth, upload.single('profile_picture'), async (req, res) => {
+  try {
+    const isPrivate = req.body.is_private === 'on';
+    
+    const currentUser = await db.one('SELECT profile_photo_url FROM users WHERE username = $1', [req.session.user.username]);
+    let newPhotoUrl = currentUser.profile_photo_url;
+
+    if (req.file) {
+        newPhotoUrl = '/img/' + req.file.filename;
+    }
+
+    await db.none(
+      'UPDATE users SET profile_photo_url = $1, is_private = $2 WHERE username = $3',
+      [newPhotoUrl, isPrivate, req.session.user.username]
+    );
+    
+    res.redirect('/profile');
+  } catch (error) {
+    console.error(error);
+    res.redirect('/profile/edit');
+  }
+});
+
+// DYNAMIC PROFILE VIEW ROUTE MOVED TO THE BOTTOM
 app.get('/profile/:username?', auth, async (req, res) => {
   try {
-    // Determine if user is viewing their own profile or someone else's
     const targetUsername = req.params.username || req.session.user.username;
     const isOwner = targetUsername === req.session.user.username;
 
-    // Fetch user data from the database
     const profileUser = await db.oneOrNone('SELECT * FROM users WHERE username = $1', [targetUsername]);
 
     if (!profileUser) {
       return res.redirect('/home');
     }
 
-    // Hide stats if the account is private and the viewer is not the owner
     const isPrivateView = profileUser.is_private && !isOwner;
 
-    // Placeholder stats (To be updated with real database queries later)
     const average_rating = 4.5;
     const rank = 10;
     const rating_title = "Open Mic Rookie";
 
     res.render('pages/profile', {
-      display_name: profileUser.display_name || profileUser.username,
       username: profileUser.username,
       profile_photo_url: profileUser.profile_photo_url,
       is_private_view: isPrivateView,
@@ -422,42 +433,71 @@ app.get('/profile/:username?', auth, async (req, res) => {
   }
 });
 
-// Profile Edit page (GET)
-app.get('/profile/edit', auth, async (req, res) => {
-  try {
-    const user = await db.one('SELECT * FROM users WHERE username = $1', [req.session.user.username]);
-    res.status(200).render('pages/profile-edit', {
-      user: user
-    });
-  } catch (error) {
-    console.error(error);
-    res.status(400).redirect('/profile');
-  }
-});
-
-// Profile Edit page (POST) - Updates database
-app.post('/profile/edit', auth, async (req, res) => {
-  try {
-    // Checkboxes send 'on' if checked, map this to a boolean
-    const isPrivate = req.body.is_private === 'on';
-    
-    await db.none(
-      'UPDATE users SET display_name = $1, profile_photo_url = $2, is_private = $3 WHERE username = $4',
-      [req.body.display_name, req.body.profile_photo_url, isPrivate, req.session.user.username]
-    );
-    
-    res.redirect('/profile');
-  } catch (error) {
-    console.error(error);
-    res.redirect('/profile/edit');
-  }
-});
-
 // *****************************************************
 // Section 4.2: Interaction & Post Routes
 // *****************************************************
 
-// Once the joke creation backend is implemented, we can replace the console logs with the actual data inserts.
+app.get('/jokecreate', auth, (req,res) => {
+  res.render('pages/jokecreate', {
+    user: res.locals.user,
+    message: 'post your joke!',
+    error: false
+  });
+});
+
+app.post('/create-joke', auth, async (req, res) => {
+  try {
+    const { jokeContent, tags } = req.body;
+    await db.none('INSERT INTO jokes(author, content, tags) VALUES($1, $2, $3)', [
+      req.session.user.username, jokeContent, tags || ''
+    ]);
+    res.redirect('/feed');
+  } catch (error) {
+    console.error(error);
+    res.redirect('/jokecreate');
+  }
+});
+
+app.get('/feed', auth, async (req, res) => {
+  try {
+    const sortOrder = req.query.sort === 'oldest' ? 'ASC' : 'DESC';
+    const tagFilter = req.query.tag ? req.query.tag.trim() : '';
+
+    let query = `
+      SELECT j.*, u.profile_photo_url
+      FROM jokes j 
+      JOIN users u ON j.author = u.username
+    `;
+    let queryParams = [];
+
+    if (tagFilter) {  
+      query += ` WHERE j.tags ILIKE $1`;
+      queryParams.push(`%${tagFilter}%`);
+    }
+
+    query += ` ORDER BY j.timestamp ${sortOrder}`;
+
+    const jokes = await db.any(query, queryParams);
+
+    res.render('pages/feed', { 
+      user: res.locals.user,
+      jokes: jokes,
+      currentSort: req.query.sort || 'newest',
+      currentTag: tagFilter,
+      error: false
+    });
+  } catch (err) {
+    console.error("FEED ROUTE ERROR:", err);
+    res.status(500).send("Database Error: " + err.message);
+  }
+});
+
+app.get('/leaderboards', (req,res) => {
+  res.render('pages/leaderboard', { 
+    user: res.locals.user
+  });
+});
+
 app.post('/rateJoke', (req,res) => {
   const rating = req.body.data;
   switch (rating) {
@@ -478,9 +518,6 @@ app.post('/reportJoke', (req, res) => {
   }
 });
 
-// Prepares the partial and then sends it to the client to be inserted dynamically
-// Later, we can modify this to retrieve data from the DB, populate the post partial,
-// then send it back to the client.
 app.get('/loadJokes', async (req,res) => {
   try {
     res.render('partials/post.hbs', { layout: false });

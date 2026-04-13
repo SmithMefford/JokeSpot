@@ -6,10 +6,10 @@
 
 <form action="/create-joke" method="POST" style="text-align: center; margin-top: 20px;">
     <div style="margin-bottom: 15px; display: flex; justify-content: center;">
-        <textarea id="jokeContent" name="jokeContent" rows="10" cols="60" placeholder="Type your joke here..." style="text-align: center;, cursive;"></textarea>
+        <textarea id="jokeContent" name="jokeContent" rows="10" cols="60" placeholder="Type your joke here..." style="text-align: center; font-family: cursive;" required></textarea>
     </div>
     <div style="margin-bottom: 15px; display: flex; justify-content: center;">
-        <textarea id="jokeContent" name="jokeContent" rows="2" cols="60" placeholder="Type your tags here..." style="text-align: center;, cursive;"></textarea>
+        <textarea id="jokeTags" name="tags" rows="2" cols="60" placeholder="Tags (e.g., funny, dad-joke, pun)..." style="text-align: center; font-family: cursive;"></textarea>
     </div>
     <div style="margin-top: 15px;">
         <button type="submit" class="henny-penny-regular btn-purple" style="font-size: 1rem; padding: 0.75rem 1.5rem;">Post Joke</button>

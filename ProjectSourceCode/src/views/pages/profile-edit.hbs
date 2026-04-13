@@ -1,34 +1,30 @@
-<div class="container my-5">
-    <div class="card mx-auto shadow" style="max-width: 600px;">
-        <div class="card-header text-center mt-3" style="background-color: transparent; border-bottom: none;">
-            <h3 class="henny-penny-regular text-primary">Edit Profile</h3>
-        </div>
-        <div class="card-body">
-            <form action="/profile/edit" method="POST">
+<div class="container mt-5">
+    <h2 class="text-center henny-penny-regular mb-4">Edit Profile</h2>
+    <div class="row justify-content-center">
+        <div class="col-md-6 border p-4 rounded shadow-sm bg-body-light">
+            
+            <form action="/profile/edit" method="POST" enctype="multipart/form-data">
                 
-                <div class="mb-3">
-                    <label for="displayName" class="form-label fw-bold">Display Name</label>
-                    <input type="text" class="form-control" id="displayName" name="display_name" value="{{user.display_name}}">
+                <div class="mb-4 text-center">
+                    <p class="mb-2">Current Photo:</p>
+                    <img src="{{user.profile_photo_url}}" alt="Profile Photo" class="rounded-circle mb-3 border" style="width: 120px; height: 120px; object-fit: cover;">
+                    <br>
+                    <label for="profile_picture" class="form-label fw-bold">Upload New Profile Photo</label>
+                    <input type="file" class="form-control" id="profile_picture" name="profile_picture" accept="image/png, image/jpeg, image/jpg">
+                    <div class="form-text">Accepted formats: .jpg, .png</div>
                 </div>
 
-                <div class="mb-3">
-                    <label for="photoUrl" class="form-label fw-bold">Profile Photo URL</label>
-                    <input type="text" class="form-control" id="photoUrl" name="profile_photo_url" value="{{user.profile_photo_url}}">
-                    <div class="form-text">Paste a link to your image (or leave default).</div>
-                </div>
-
-                <div class="mb-4 form-check mt-4">
-                    <input type="checkbox" class="form-check-input border-secondary" id="isPrivate" name="is_private" {{#if user.is_private}}checked{{/if}}>
-                    <label class="form-check-label fw-bold" for="isPrivate">Make Account Private</label>
-                    <div class="form-text">Private accounts hide stats and rankings from other users.</div>
+                <div class="mb-4 form-check d-flex justify-content-center align-items-center gap-2">
+                    <input type="checkbox" class="form-check-input mt-0" id="is_private" name="is_private" {{#if user.is_private}}checked{{/if}}>
+                    <label class="form-check-label" for="is_private">Make Profile Private</label>
                 </div>
 
                 <div class="d-grid gap-2">
-                    <button type="submit" class="btn btn-purple py-2 fw-bold">Save Changes</button>
-                    <a href="/profile" class="btn btn-outline-secondary py-2 fw-bold">Cancel</a>
+                    <button type="submit" class="btn btn-purple henny-penny-regular" style="font-size: 1.2rem;">Save Changes</button>
+                    <a href="/profile" class="btn btn-secondary henny-penny-regular">Cancel</a>
                 </div>
-
             </form>
+            
         </div>
     </div>
 </div>
