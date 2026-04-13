@@ -43,6 +43,10 @@ app.use(
     resave: false,
   })
 );
+app.use((req, res, next) => {
+    res.locals.user = req.session.user || null;
+    next();
+});
 
 // Database config
 const dbConfig = {
@@ -123,7 +127,7 @@ app.get('/home', (req, res) => {
   //"Another man walks into a bar and says, 'Why did they put this here?'"
 
   res.render('pages/home', {
-    user: req.session.user,
+    user: res.locals.user,
     message: 'Welcome to JokeSpot!',
     error: false,
     jokes   // <-- pass jokes array to Handlebars
@@ -171,7 +175,7 @@ app.get('/admin', onlyUser0, async (req, res) => {
     `);
 
     res.render('pages/admin', {
-      user: req.session.user,
+      user: res.locals.user,
       reports,
       flaggedUsers,
       pendingCount: pendingCount.count,
@@ -290,17 +294,35 @@ app.get('/logout', auth, (req, res) => {
   });
 });
 
-app.get('/settings', auth, (req,res) => {
-  res.render('pages/settings', {
-    user: req.session.user,
-    message: 'Welcome to JokeSpot settings!',
-    error: false
-  });
+app.get('/settings', auth, async (req, res) => {
+  try {
+    const user = await db.one(
+      'SELECT * FROM users WHERE username = $1',
+      [req.session.user.username]
+    );
+
+    req.session.user = user;
+    res.locals.user = user;
+
+    res.render('pages/settings', {
+      user,
+      message: 'Welcome to JokeSpot settings!',
+      error: false
+    });
+
+  } catch (err) {
+    console.error(err);
+    res.render('pages/settings', {
+      user: req.session.user,
+      message: 'Error loading settings',
+      error: true
+    });
+  }
 });
 
 app.get('/jokecreate', auth, (req,res) => {
   res.render('pages/jokecreate', {
-    user: req.session.user,
+    user: res.locals.user,
     message: 'post your joke!',
     error: false
   });
@@ -308,18 +330,53 @@ app.get('/jokecreate', auth, (req,res) => {
 
 app.get('/leaderboards', (req,res) => {
   res.render('pages/leaderboard', { 
-    user: req.session.user
+    user: res.locals.user
   });
 });
 
 app.get('/feed', auth, (req,res) => {
   try {
     res.render('pages/feed', { 
-      user: req.session.user,
+      user: res.locals.user,
       error: false
     });
   } catch (err) {
     res.redirect('/login');
+  }
+});
+
+app.post('/settings', auth, async (req, res) => {
+  try {
+    const username = req.session.user.username;
+
+    const dark_mode = req.body.darkMode === "on";
+    const profanity_filter = req.body.profanity_filter === "on";
+    const auto_refresh = req.body.autoRefresh === "on";
+    const is_private = req.body.profileVisibility === "on";
+
+    await db.none(
+      `UPDATE users
+       SET dark_mode = $1,
+           profanity_filter = $2,
+           auto_refresh = $3,
+           is_private = $4
+       WHERE username = $5`,
+      [dark_mode, profanity_filter, auto_refresh, is_private, username]
+    );
+
+    req.session.user = {
+      ...req.session.user,
+      dark_mode,
+      profanity_filter,
+      auto_refresh,
+      is_private
+    };
+
+    res.redirect('/settings');
+
+  } catch (err) {
+    console.error(err);
+    res.status(500).send(err.message);
   }
 });
 

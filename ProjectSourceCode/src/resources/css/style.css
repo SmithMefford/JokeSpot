@@ -98,3 +98,45 @@ input:checked + .slider:before {
 .slider.round:before {
   border-radius: 50%;
 }
+
+body.dark-mode {
+  background-color: #121212;
+  color: #eaeaea;
+}
+
+body.dark-mode .card {
+  background-color: #1e1e1e;
+  color: #eaeaea;
+  border-color: #333;
+}
+
+body.dark-mode .navbar,
+body.dark-mode .offcanvas {
+  background-color: #1a1a1a;
+  color: #eaeaea;
+  border-color: #333;
+}
+
+body.dark-mode a {
+  color: #eaeaea;
+}
+
+body.dark-mode .footer {
+  background-color: #1a1a1a !important;
+  color: #eaeaea;
+  border-top: 1px solid #333;
+}
+
+body.dark-mode .footer a {
+  color: #8ab4f8;
+}
+
+body.dark-mode .card-footer {
+  background-color: #1a1a1a;
+  color: #eaeaea;
+  border-top: 1px solid #333;
+}
+
+body.dark-mode .card-footer button {
+  color: #eaeaea;
+}
