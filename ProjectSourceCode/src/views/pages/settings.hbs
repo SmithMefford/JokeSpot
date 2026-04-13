@@ -8,7 +8,7 @@
         <!-- Dark Mode -->
         <div class="card" style="padding: 20px; min-width: 180px; text-align: center;">
             <label class="switch" style="display: flex; justify-content: center; align-items: center; margin: 0 auto;">
-                <input type="checkbox" name="darkMode">
+                <input type="checkbox" name="darkMode" {{#if user.dark_mode}}checked{{/if}}>
                 <span class="slider round"></span>
             </label>
             <div style="margin-top:10px;">Enable Dark Mode</div>
@@ -17,7 +17,7 @@
         <!-- Vulgar Content -->
         <div class="card" style="padding: 20px; min-width: 180px; text-align: center;">
             <label class="switch" style="display: flex; justify-content: center; align-items: center; margin: 0 auto;">
-                <input type="checkbox" name="notifications">
+                <input type="checkbox" name="profanity_filter" {{#if user.profanity_filter}}checked{{/if}}>
                 <span class="slider round"></span>
             </label>
             <div style="margin-top:10px;">Enable Vulgar Content</div>
@@ -26,7 +26,7 @@
         <!-- Auto Refresh -->
         <div class="card" style="padding: 20px; min-width: 180px; text-align: center;">
             <label class="switch" style="display: flex; justify-content: center; align-items: center; margin: 0 auto;">
-                <input type="checkbox" name="autoRefresh">
+                <input type="checkbox" name="autoRefresh" {{#if user.auto_refresh}}checked{{/if}}>
                 <span class="slider round"></span>
             </label>
             <div style="margin-top:10px;">Auto Refresh Jokes</div>
@@ -35,10 +35,16 @@
         <!-- Profile Visibility -->
         <div class="card" style="padding: 20px; min-width: 180px; text-align: center;">
             <label class="switch" style="display: flex; justify-content: center; align-items: center; margin: 0 auto;">
-                <input type="checkbox" name="profileVisibility">
+                <input type="checkbox" name="profileVisibility" {{#if user.is_private}}checked{{/if}}>
                 <span class="slider round"></span>
             </label>
             <div style="margin-top:10px;">Make Profile Private</div>
+        </div>
+
+        <div style="text-align:center; margin-top:20px;">
+            <button type="submit" class="btn btn-success">
+            Save Settings
+            </button>
         </div>
 
     </div>

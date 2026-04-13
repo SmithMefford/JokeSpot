@@ -3,7 +3,9 @@ CREATE TABLE IF NOT EXISTS users (
     password varchar(255) NOT NULL,
     profile_photo_url varchar(255) DEFAULT '/img/default_profile_1.png',
     is_private BOOLEAN DEFAULT FALSE,
-    profanity_filter BOOLEAN DEFAULT TRUE
+    profanity_filter BOOLEAN DEFAULT TRUE,
+    dark_mode BOOLEAN DEFAULT FALSE,
+    auto_refresh BOOLEAN DEFAULT FALSE
 );
 
 CREATE TABLE IF NOT EXISTS jokes (
