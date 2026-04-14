@@ -462,14 +462,15 @@ app.post('/profile/edit', auth, async (req, res) => {
 
 // Once the joke creation backend is implemented, we can replace the console logs with the actual data inserts.
 app.post('/rateJoke', (req,res) => {
-  const rating = req.body.data;
-  console.log(rating)
+  const data = req.body.data;
+  const id = Object.values(data)[0];
+  const rating = Object.values(data)[1];
   switch (rating) {
     case "upvote":
-      console.log("the joke was upvoted");
+      console.log(`${id} was upvoted`);
       break;
     case "downvote":
-      console.log("the joke was downvoted")
+      console.log(`${id} was downvoted`)
       break;
     default:
       console.log("no interaction with the joke")
@@ -488,9 +489,10 @@ app.post('/reportJoke', (req, res) => {
 // Prepares the partial and then sends it to the client to be inserted dynamically
 // Later, we can modify this to retrieve data from the DB, populate the post partial,
 // then send it back to the client.
-app.get('/loadJokes', async (req,res) => {
+app.post('/loadJokes', async (req,res) => {
   try {
-    const queryJoke = `SELECT * FROM jokes ORDER BY timestamp LIMIT 1;`;
+    let jokes_loaded = req.body.loaded;
+    const queryJoke = `SELECT * FROM jokes ORDER BY timestamp, id LIMIT 1 OFFSET ${jokes_loaded};`;
     const joke = await db.oneOrNone(queryJoke);
     res.render('partials/post.hbs', {
       layout: false,
