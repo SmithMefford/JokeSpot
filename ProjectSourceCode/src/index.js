@@ -109,7 +109,7 @@ app.get('/', (req, res) => {
 
 // Login page
 app.get('/login', (req, res) => {
-  res.render('pages/login');
+  res.status(200).render('pages/login');
 });
 
 // Register page
@@ -237,9 +237,12 @@ app.post('/register', async (req, res) => {
       'SELECT * FROM users WHERE username = $1',
       [req.body.username]
     );
+
+    // signs in the user upon registration
     req.session.user = user;
     req.session.save();
-    return res.status(200).redirect('/home');
+
+    return res.redirect('/home');  // redirect is code 302
   } catch (error) {
     // console.error(error);  // removed bc makes tests hard to see
     res.status(400).render('pages/register', {
