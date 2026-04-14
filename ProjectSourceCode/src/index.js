@@ -331,6 +331,27 @@ app.get('/jokecreate', auth, (req,res) => {
   });
 });
 
+app.post('/jokecreate', auth, async (req,res) => {
+    const { jokeContent, tags } = req.body;
+
+    if (!jokeContent) {  // should we require a tag?
+        return res.status(400).send("Missing field");
+    }
+
+    try {
+        // database insert (TODO)
+        await db.query(
+            "INSERT INTO jokes (content, tags) VALUES (?, ?)",
+            [jokeContent, tags]
+        );
+
+        res.sendStatus(200);
+
+    } catch (err) {
+        res.sendStatus(500);
+    }
+});
+
 app.get('/leaderboards', (req,res) => {
   res.render('pages/leaderboard', { 
     user: res.locals.user
