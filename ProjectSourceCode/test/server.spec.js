@@ -35,11 +35,12 @@ describe('Testing Registration API', () => {
     chai
       .request(server)
       .post('/register')
+      .redirects(0)
       .send({username: 'the_real_admin', password: '$2a$10$E.Nq8oyJqsqC45g.38Rkj.Wvgya2p1PBH/LM4F1scBxXgbTrRlASG'})
       .end((err, res) => {
         expect(res).to.have.status(302); // redirection status code
         // expect(res.body.message).to.equals('Success');  // no json body, redirects instead
-        res.should.redirectTo(/^.*127\.0\.0\.1.*\/home$/); // Expecting a redirect to /login with the mentioned Regex (localhost)
+        res.should.redirectTo('/home');
         done();
       });
   });
