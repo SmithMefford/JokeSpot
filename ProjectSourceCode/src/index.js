@@ -39,7 +39,8 @@ app.use('/img', express.static(path.join(__dirname, 'resources', 'img')));
 // Set up Multer for image uploads
 const storage = multer.diskStorage({
   destination: function (req, file, cb) {
-    cb(null, path.join(__dirname, 'resources', 'img')); 
+    // Save files to the ignored pfp/ subdirectory to avoid cross-platform Git issues
+    cb(null, path.join(__dirname, 'resources', 'img', 'pfp')); 
   },
   filename: function (req, file, cb) {
     const ext = path.extname(file.originalname);
@@ -385,7 +386,8 @@ app.post('/profile/edit', auth, upload.single('profile_picture'), async (req, re
     let newPhotoUrl = currentUser.profile_photo_url;
 
     if (req.file) {
-        newPhotoUrl = '/img/' + req.file.filename;
+        // Path now includes /pfp/
+        newPhotoUrl = '/img/pfp/' + req.file.filename;
     }
 
     await db.none(
