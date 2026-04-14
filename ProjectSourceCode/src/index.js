@@ -490,7 +490,15 @@ app.post('/reportJoke', (req, res) => {
 // then send it back to the client.
 app.get('/loadJokes', async (req,res) => {
   try {
-    res.render('partials/post.hbs', { layout: false });
+    const queryJoke = `SELECT * FROM jokes ORDER BY timestamp LIMIT 1;`;
+    const joke = await db.oneOrNone(queryJoke);
+    res.render('partials/post.hbs', {
+      layout: false,
+      jokeID: joke.id,
+      username: joke.author,
+      timestamp: joke.timestamp,
+      content: joke.content
+    });
   } catch (err) {
     res.status(500).send("Failed to load post")
   }
