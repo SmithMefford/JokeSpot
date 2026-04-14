@@ -339,10 +339,10 @@ app.post('/jokecreate', auth, async (req,res) => {
     }
 
     try {
-        // database insert (TODO)
+        // database insert
         await db.query(
-            "INSERT INTO jokes (content, tags) VALUES (?, ?)",
-            [jokeContent, tags]
+            "INSERT INTO jokes (author, content, tags) VALUES ($1, $2, $3)",
+            [req.session.user.username, jokeContent, tags]
         );
 
         res.sendStatus(200);
