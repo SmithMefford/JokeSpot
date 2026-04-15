@@ -80,6 +80,40 @@ document.addEventListener("submit", async (event) => {
         headers: { 'Content-Type' : 'application/json' },
         body: JSON.stringify({ data : data})
       });
+    case "postJoke":
+        event.preventDefault();
+
+        const joke = document.getElementById("jokeContent").value;
+        const tags = document.getElementById("tags").value;
+
+        const messageBox = document.getElementById("messageBox");
+
+        try {  // needs to be worked on!!!
+            const res = await fetch("/jokecreate", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json"
+                },
+                body: JSON.stringify({ jokeContent: joke, tags: tags })
+            });
+
+            if (res.ok) {
+                messageBox.className = "alert alert-success mx-auto text-center rounded";
+                messageBox.textContent = "Joke Posted!";
+                
+                // clear fields
+                document.getElementById("jokeContent").value = "";
+                document.getElementById("tags").value = "";
+            } else {
+                throw new Error();
+            }
+
+        } catch (err) {
+            messageBox.className = "alert alert-danger mx-auto text-center rounded";
+            messageBox.textContent = "Failed to post joke.";
+        }
+
+        messageBox.classList.remove("d-none");
 
 
       break;
