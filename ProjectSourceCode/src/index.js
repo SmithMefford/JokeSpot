@@ -535,7 +535,7 @@ app.post('/reportJoke', async (req, res) => {
 app.post('/loadJokes', async (req,res) => {
   try {
     const jokes_loaded = req.body.loaded;
-    const queryJoke = `SELECT * FROM jokes ORDER BY timestamp, id DESC LIMIT 1 OFFSET ${jokes_loaded};`;
+    const queryJoke = `SELECT * FROM jokes ORDER BY timestamp DESC, id DESC LIMIT 1 OFFSET ${jokes_loaded};`;
     const joke = await db.oneOrNone(queryJoke);
     const queryPFP = `SELECT profile_photo_url FROM users WHERE users.username = '${joke.author}';`;
     const photo = await db.oneOrNone(queryPFP);
