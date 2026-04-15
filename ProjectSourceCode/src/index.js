@@ -478,9 +478,15 @@ app.post('/rateJoke', (req,res) => {
   }
 });
 
-app.post('/reportJoke', (req, res) => {
+app.post('/reportJoke', async (req, res) => {
   try {
-    console.log(req.body.data);
+    const report = req.body.data;
+    const jokeID = report.joke_id;
+    const user = req.session.user.username;
+    const reason = report.report_reason;
+    const details = report.report_explanation;
+    const reportQuery = `INSERT INTO joke_reports (joke_id, reporter_username, reason, details) VALUES (${jokeID}, '${user}','${reason}', '${details}');`;
+    await db.none(reportQuery);
   } catch(err) {
     res.status(500).send("Failed to report joke");
   }
@@ -491,8 +497,8 @@ app.post('/reportJoke', (req, res) => {
 // then send it back to the client.
 app.post('/loadJokes', async (req,res) => {
   try {
-    let jokes_loaded = req.body.loaded;
-    const queryJoke = `SELECT * FROM jokes ORDER BY timestamp, id LIMIT 1 OFFSET ${jokes_loaded};`;
+    const jokes_loaded = req.body.loaded;
+    const queryJoke = `SELECT * FROM jokes ORDER BY timestamp, id DESC LIMIT 1 OFFSET ${jokes_loaded};`;
     const joke = await db.oneOrNone(queryJoke);
     const queryPFP = `SELECT profile_photo_url FROM users WHERE users.username = '${joke.author}';`;
     const photo = await db.oneOrNone(queryPFP);
