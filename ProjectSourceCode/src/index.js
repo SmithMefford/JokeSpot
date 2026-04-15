@@ -228,10 +228,12 @@ app.post('/register', async (req, res) => {
     ];
     const randomAvatar = defaultAvatars[Math.floor(Math.random() * defaultAvatars.length)];
 
-    // Updated insert statement to include profile_photo_url
+    const profanityFilterEnabled = req.body.profanity_filter === "true";  // boolean
+
+    // INSERT new user with profile_photo_url and profanity setting
     await db.none(
-      'INSERT INTO users(username, password, profile_photo_url) VALUES($1, $2, $3)',
-      [req.body.username, hash, randomAvatar]
+      'INSERT INTO users(username, password, profile_photo_url, profanity_filter) VALUES($1, $2, $3, $4)',
+      [req.body.username, hash, randomAvatar, profanityFilterEnabled]
     );
     const user = await db.one(
       'SELECT * FROM users WHERE username = $1',
