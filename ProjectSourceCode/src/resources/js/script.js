@@ -1,4 +1,5 @@
 console.log("script.js loaded");
+let jokes_loaded = 0;
 
 (() => {
   'use strict';
@@ -49,28 +50,22 @@ console.log("script.js loaded");
 // Allows to call api routes without refreshing the page  
 document.addEventListener("submit", async (event) => {
   const e = event.target;
-  //console.log(e)
-  switch (e.id) {
+
+  switch (e.name) {
     case "rateJoke":
       event.preventDefault();
 
-      const rateData = new FormData(event.target);
-      const rating = rateData.getAll('rate')[0];
-      console.log(rating)
+      const formData1 = new FormData(e);
+      const rateData = Object.fromEntries(formData1.entries())
       await fetch('/rateJoke', {
         method: 'POST', 
         headers: { 'Content-Type' : 'application/json' },
-        body: JSON.stringify({ data : rating})
+        body: JSON.stringify({ data : rateData})
       });
       break;
     case "loadJokes":
       event.preventDefault();
-
-      for (let i = 0; i < 6; i++) {
-        const res = await fetch('/loadJokes');
-        const post = await res.text();
-        document.getElementById('feedBox').innerHTML += post;
-      }
+      loadJokes(5);
       break;
     case "reportJoke":
       event.preventDefault();
@@ -147,20 +142,31 @@ document.addEventListener("submit", async (event) => {
 document.addEventListener("DOMContentLoaded", async () => {
     const target = document.getElementById("feed_page");
     if (target) {
-      for (let i = 0; i < 9; i++) {
-        const res = await fetch('/loadJokes');
-        const post = await res.text();
-        document.getElementById('feedBox').innerHTML += post;
-      }
+      loadJokes(10)
   }
 });
 
 function switchInteraction(option) {
   const groupName = option.name;
+  console.log(groupName);
   const interactions = document.getElementsByName(groupName);
   interactions.forEach((item) => {
     if (item !== option) item.checked = false;
   });
 
   option.form.requestSubmit();
+}
+
+async function loadJokes(amount) {
+  for (let i = 0; i < amount; i++) {
+    const res = await fetch('/loadJokes', {
+      method: 'POST',
+      headers: { 'Content-Type' : 'application/json' },
+      body: JSON.stringify({ loaded : jokes_loaded})
+    });
+    const post = await res.text();
+    document.getElementById('feedBox').innerHTML += post;
+    jokes_loaded++;
+    // console.log(jokes_loaded)
+  }
 }
