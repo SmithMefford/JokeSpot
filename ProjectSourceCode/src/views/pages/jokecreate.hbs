@@ -4,7 +4,7 @@
 <p class="text-center henny-penny-regular" style="margin-top: 15px;">{{user.username}}, share your joke!</p>
 {{/if}}
 
-<form id="postJoke" action="/jokecreate" method="POST" style="text-align: center; margin-top: 20px;">
+<form id="postJoke" name="postJoke" action="/jokecreate" method="POST" style="text-align: center; margin-top: 20px;">
     <div style="margin-bottom: 15px; display: flex; justify-content: center;">
         <textarea id="jokeContent" name="jokeContent" rows="10" cols="60" placeholder="Why did the chicken cross the road..." style="text-align: center;, cursive;"></textarea>
     </div>
