@@ -494,10 +494,13 @@ app.post('/loadJokes', async (req,res) => {
     let jokes_loaded = req.body.loaded;
     const queryJoke = `SELECT * FROM jokes ORDER BY timestamp, id LIMIT 1 OFFSET ${jokes_loaded};`;
     const joke = await db.oneOrNone(queryJoke);
+    const queryPFP = `SELECT profile_photo_url FROM users WHERE users.username = '${joke.author}';`;
+    const photo = await db.oneOrNone(queryPFP);
     res.render('partials/post.hbs', {
       layout: false,
       jokeID: joke.id,
       username: joke.author,
+      profilePicture: photo.profile_photo_url,
       timestamp: joke.timestamp,
       content: joke.content
     });
