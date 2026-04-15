@@ -19,11 +19,11 @@
                     <div class="col-6 d-flex justify-content-start align-items-center">
                         <form action="/rateJoke" method="POST" id="rateJoke{{ jokeID }}" name="rateJoke">
                             <input type="hidden" name="joke_id" value="{{ jokeID }}">
-                            <input type="checkbox" id="like{{ jokeID }}" name="rate{{ jokeID }}" value="upvote" onclick="switchInteraction(this)">
+                            <input type="checkbox" id="like{{ jokeID }}" name="rate{{ jokeID }}" value="like" onclick="switchInteraction(this)">
                             <label for="like{{ jokeID }}" style="font-size: x-large;">
                                 <i class="fa-solid fa-heart"></i>
                             </label>
-                            <input type="checkbox" id="dislike{{ jokeID }}" name="rate{{ jokeID }}" value="downvote" onclick="switchInteraction(this)">
+                            <input type="checkbox" id="dislike{{ jokeID }}" name="rate{{ jokeID }}" value="dislike" onclick="switchInteraction(this)">
                             <label for="dislike{{ jokeID }}" style="font-size: x-large;">
                                 <i class="fa-solid fa-heart-crack"></i>
                             </label>

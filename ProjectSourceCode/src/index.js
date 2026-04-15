@@ -461,20 +461,36 @@ app.post('/profile/edit', auth, async (req, res) => {
 // *****************************************************
 
 // Once the joke creation backend is implemented, we can replace the console logs with the actual data inserts.
-app.post('/rateJoke', (req,res) => {
-  const data = req.body.data;
-  const id = Object.values(data)[0];
-  const rating = Object.values(data)[1];
-  switch (rating) {
-    case "upvote":
-      console.log(`${id} was upvoted`);
-      break;
-    case "downvote":
-      console.log(`${id} was downvoted`)
-      break;
-    default:
-      console.log("no interaction with the joke")
-      break;
+app.post('/rateJoke', async (req,res) => {
+  try {
+    const interaction = req.body.data;
+    const jokeID = Object.values(interaction)[0];
+    const user = req.session.user.username;
+    const rating = Object.values(interaction)[1];
+    const searchInteractions = `SELECT * FROM joke_reactions WHERE joke_id = ${jokeID} AND username = '${user}';`; // Need to check if the user has already interacted with this joke
+    db.oneOrNone(searchInteractions)
+      .then((entry) => {
+        let reactionQuery;
+        if (entry) { // An entry exists already, either we are deleting or updating
+          // Update with rating
+          if ((rating == 'like') || (rating == 'dislike')) {
+            reactionQuery = `UPDATE joke_reactions SET reaction = '${rating}' WHERE joke_id = ${jokeID} AND username = '${user}';`;
+          } else {
+            // Delete the reaction
+            reactionQuery = `DELETE FROM joke_reactions WHERE joke_id = ${jokeID} AND username = '${user}';`;
+          }
+        } else {
+          // An entry does not exist, insert a reaction
+          reactionQuery = `INSERT INTO joke_reactions (joke_id, username, reaction) VALUES (${jokeID}, '${user}', '${rating}');`;
+        }
+        console.log(reactionQuery);
+        db.none(reactionQuery);
+      })
+      .catch((error) => {
+        console.error(error);
+      });
+  } catch (error) {
+    res.status(500).send("Failed to interact with joke.")
   }
 });
 
@@ -488,7 +504,7 @@ app.post('/reportJoke', async (req, res) => {
     const reportQuery = `INSERT INTO joke_reports (joke_id, reporter_username, reason, details) VALUES (${jokeID}, '${user}','${reason}', '${details}');`;
     await db.none(reportQuery);
   } catch(err) {
-    res.status(500).send("Failed to report joke");
+    res.status(500).send("Failed to report joke.");
   }
 });
 
