@@ -536,8 +536,23 @@ app.post('/reportJoke', async (req, res) => {
 // then send it back to the client.
 app.post('/loadJokes', async (req,res) => {
   try {
-    const jokes_loaded = req.body.loaded;
-    const queryJoke = `SELECT * FROM jokes ORDER BY timestamp DESC, id DESC LIMIT 1 OFFSET ${jokes_loaded};`;
+    const data = req.body;
+    const jokes_loaded = data.loaded;
+    let searchQuery = '';
+    console.log(data)
+
+    if ("searchType" in data) {
+      const search = data.searchBar;
+      const type = data.searchType;
+      if (type == 'content') {
+        searchQuery = `WHERE content ILIKE '%${search}%'`;
+      }
+      else {
+        searchQuery = `WHERE tags ILIKE '%${search}%'`;
+      }
+    }
+
+    const queryJoke = `SELECT * FROM jokes ${searchQuery} ORDER BY timestamp DESC, id DESC LIMIT 1 OFFSET ${jokes_loaded};`;
     const joke = await db.oneOrNone(queryJoke);
     const queryPFP = `SELECT profile_photo_url FROM users WHERE users.username = '${joke.author}';`;
     const photo = await db.oneOrNone(queryPFP);
@@ -550,7 +565,17 @@ app.post('/loadJokes', async (req,res) => {
       content: joke.content
     });
   } catch (err) {
-    res.status(500).send("Failed to load post")
+    res.status(500);
+  }
+});
+
+app.get('/getJokeCount', async (req,res) => {
+  try {
+    const jokeCount = `SELECT Count(*) FROM jokes;`;
+    const count = await db.one(jokeCount)
+    res.send(count);
+  } catch (err) {
+    res.status(500)
   }
 });
 

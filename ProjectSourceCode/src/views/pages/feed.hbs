@@ -1,5 +1,16 @@
 <div class="container justify-content-center align-items-center" id="feed_page">
     <h1 class="henny-penny-regular my-4">Feed the doomscroll...</h1>
+    <div class="pb-2">
+        <form action="/search" method="POST" id="searchJokes" name="searchJokes" onsubmit="timeoutButton(document.getElementById('submitSearch'))">
+            <label for="searchType">Search by...</label>
+            <select name="searchType" id="searchType">
+                <option value="content">Content</option>
+                <option value="tags">tags</option>
+            </select>
+            <Input type="text" name="searchBar"></Input>
+            <button id="submitSearch" type="submit" class="btn btn-purple henny-penny-regular" name="searchButton">Search!</button>
+        </form>
+    </div>
     <div class="container border rounded justify-content-center align-items-center overflow-auto" id="feedBox" style="height: 500px;">
 
     </div>
