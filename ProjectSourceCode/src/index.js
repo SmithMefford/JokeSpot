@@ -38,7 +38,7 @@ app.use('/img', express.static(path.join(__dirname, 'resources', 'img')));
 // Session setup
 app.use(
   session({
-    secret: 'temporary-secret', // simplified for dev
+    secret: process.env.SESSION_SECRET || 'superdupersecret!',
     saveUninitialized: false,
     resave: false,
   })
@@ -50,11 +50,12 @@ app.use((req, res, next) => {
 
 // Database config
 const dbConfig = {
-  host: 'db',
-  port: 5432,
+  host: process.env.POSTGRES_HOST,
+  port: process.env.POSTGRES_PORT || 5432,
   database: process.env.POSTGRES_DB,
   user: process.env.POSTGRES_USER,
   password: process.env.POSTGRES_PASSWORD,
+  ssl: { rejectUnauthorized: false }
 };
 
 const db = pgp(dbConfig);
