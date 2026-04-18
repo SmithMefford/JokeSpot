@@ -22,60 +22,119 @@
     </div>
   </div>
 
-  <h4 class="mt-4">Reported jokes</h4>
-  <table class="table table-bordered mt-2">
-    <thead>
-      <tr>
-        <th>Joke ID</th>
-        <th>Content</th>
-        <th>Author</th>
-        <th>Reason</th>
-        <th>Details</th>
-        <th>Reported at</th>
-        <th>Actions</th>
-      </tr>
-    </thead>
-    <tbody>
-      {{#each reports}}
-      <tr>
-        <td>{{this.joke_id}}</td>
-        <td>{{this.content}}</td>
-        <td>{{this.author}}</td>
-        <td>{{this.reason}}</td>
-        <td>{{this.details}}</td>
-        <td>{{this.created_at}}</td>
-        <td style="display: flex; gap: 8px; align-items: center;">
-        <form method="POST" action="/admin/dismiss/{{this.id}}">
-            <button type="submit" class="btn btn-sm btn-secondary">Dismiss</button>
-        </form>
-        <form method="POST" action="/admin/delete/{{this.joke_id}}">
-            <button type="submit" class="btn btn-sm btn-danger">Delete</button>
-        </form>
-        </td>
-      </tr>
-      {{/each}}
-    </tbody>
-  </table>
+  <div class="mt-4 d-flex align-items-center gap-3">
+    <h4 class="mb-0" id="view-label">Reported jokes</h4>
+    <div class="form-check form-switch mb-0">
+      <input
+        class="form-check-input"
+        type="checkbox"
+        role="switch"
+        id="viewToggle"
+        onchange="toggleView(this.checked)"
+      />
+      <label class="form-check-label" for="viewToggle">Flagged accounts</label>
+    </div>
+  </div>
 
-  <h4 class="mt-4">Flagged accounts</h4>
-  <table class="table table-bordered mt-2">
-    <thead>
-      <tr>
-        <th>Username</th>
-        <th>Total reports</th>
-        <th>Latest reason</th>
-        <th>Most recent report</th>
-      </tr>
-    </thead>
-    <tbody>
-      {{#each flaggedUsers}}
-      <tr>
-        <td>{{this.author}}</td>
-        <td>{{this.report_count}}</td>
-        <td>{{this.latest_reason}}</td>
-        <td>{{this.latest_report}}</td>
-      </tr>
-      {{/each}}
-    </tbody>
-  </table>
+  <div id="jokes-view">
+    <table class="table table-bordered mt-2">
+      <thead>
+        <tr>
+          <th>Joke ID</th>
+          <th>Content</th>
+          <th>Author</th>
+          <th>Reason</th>
+          <th>Details</th>
+          <th>Reported at</th>
+          <th>Actions</th>
+        </tr>
+      </thead>
+      <tbody>
+        {{#each reports}}
+        <tr>
+          <td>{{this.joke_id}}</td>
+          <td>{{this.content}}</td>
+          <td>{{this.author}}</td>
+          <td>{{this.reason}}</td>
+          <td>{{this.details}}</td>
+          <td>{{this.created_at}}</td>
+          <td style="display: flex; gap: 8px; align-items: center;">
+            <form method="POST" action="/admin/dismiss/{{this.id}}">
+              <button type="submit" class="btn btn-sm btn-secondary">Dismiss</button>
+            </form>
+            <form method="POST" action="/admin/delete/{{this.joke_id}}">
+              <button type="submit" class="btn btn-sm btn-danger">Delete</button>
+            </form>
+          </td>
+        </tr>
+        {{/each}}
+      </tbody>
+    </table>
+  </div>
+
+  <div id="accounts-view" style="display: none;">
+    <table class="table table-bordered mt-2">
+      <thead>
+        <tr>
+          <th>Username</th>
+          <th>Total reports</th>
+          <th>Latest reason</th>
+          <th>Most recent report</th>
+          <th>Actions</th>
+        </tr>
+      </thead>
+      <tbody>
+        {{#each flaggedUsers}}
+        <tr>
+          <td>{{this.author}}</td>
+          <td>{{this.report_count}}</td>
+          <td>{{this.latest_reason}}</td>
+          <td>{{this.latest_report}}</td>
+          <td>
+            <button
+              type="button"
+              class="btn btn-sm btn-danger"
+              onclick="confirmDelete('{{this.author}}')"
+            >Delete</button>
+          </td>
+        </tr>
+        {{/each}}
+      </tbody>
+    </table>
+  </div>
 </div>
+
+<!-- Delete confirmation modal -->
+<div class="modal fade" id="deleteUserModal" tabindex="-1" aria-labelledby="deleteUserModalLabel" aria-hidden="true">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="deleteUserModalLabel">Delete account</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body">
+        Are you sure you want to delete <strong id="modal-username"></strong> and all their data? This cannot be undone.
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+        <form id="delete-user-form" method="POST">
+          <button type="submit" class="btn btn-danger">Delete</button>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+  function toggleView(showAccounts) {
+    document.getElementById('jokes-view').style.display = showAccounts ? 'none' : 'block';
+    document.getElementById('accounts-view').style.display = showAccounts ? 'block' : 'none';
+    document.getElementById('view-label').textContent = showAccounts ? 'Flagged accounts' : 'Reported jokes';
+  }
+
+  function confirmDelete(username) {
+    document.getElementById('modal-username').textContent = username;
+    document.getElementById('delete-user-form').action = '/admin/delete-user/' + username;d
+    new bootstrap.Modal(document.getElementById('deleteUserModal')).show();
+  }
+</script>

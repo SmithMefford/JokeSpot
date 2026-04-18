@@ -55,7 +55,7 @@ const dbConfig = {
   database: process.env.POSTGRES_DB,
   user: process.env.POSTGRES_USER,
   password: process.env.POSTGRES_PASSWORD,
-  ssl: { rejectUnauthorized: false }
+  ssl: process.env.NODE_ENV === 'production' ? { rejectUnauthorized: false } : false
 };
 
 const db = pgp(dbConfig);
@@ -207,6 +207,19 @@ app.post('/admin/delete/:jokeId', onlyUser0, async (req, res) => {
     await db.none(
       'DELETE FROM jokes WHERE id = $1',
       [req.params.jokeId]
+    );
+    res.redirect('/admin');
+  } catch (error) {
+    console.error(error);
+    res.redirect('/admin');
+  }
+});
+
+app.post('/admin/delete-user/:username', onlyUser0, async (req, res) => {
+  try {
+    await db.none(
+      'DELETE FROM users WHERE username = $1',
+      [req.params.username]
     );
     res.redirect('/admin');
   } catch (error) {
