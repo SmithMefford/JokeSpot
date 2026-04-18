@@ -52,6 +52,23 @@ document.addEventListener("submit", async (event) => {
   const e = event.target;
 
   switch (e.name) {
+    case "searchJokes":
+      event.preventDefault();
+      
+      const feedBox = document.getElementById("feedBox");
+      feedBox.replaceChildren();
+
+      const searchData = Object.fromEntries((new FormData(e)).entries());
+      
+      const response = await fetch('/getJokeCount');
+      console.log(response)
+      const countData = await response.json();
+      const jokesInDB = countData.count;
+
+      jokes_loaded = 0;
+
+      loadJokes(50, searchData)
+      break;
     case "rateJoke":
       event.preventDefault();
 
@@ -118,24 +135,6 @@ document.addEventListener("submit", async (event) => {
 
       break;
   }
-  // if (event.target.id === "rateJoke") {
-  //   event.preventDefault();
-  
-  //   const rating = event.submitter.value
-  //   const res = await fetch('/rateJoke', {
-  //     method: 'POST', 
-  //     headers: { 'Content-Type' : 'application/json' },
-  //     body: JSON.stringify({ data : rating})
-  //   });
-  // } else if (event.target.id === "loadJokes") {
-  //   event.preventDefault();
-
-  //   for (let i = 0; i < 6; i++) {
-  //     const res = await fetch('/loadJokes');
-  //     const post = await res.text();
-  //     document.getElementById('feedBox').innerHTML += post;
-  //   }
-  // } 
 });
 
 // Check if a certain element was loaded
@@ -157,16 +156,24 @@ function switchInteraction(option) {
   option.form.requestSubmit();
 }
 
-async function loadJokes(amount) {
+async function loadJokes(amount, searchParams = {}) {
   for (let i = 0; i < amount; i++) {
+    const loadData = Object.assign(searchParams, { loaded: jokes_loaded });
     const res = await fetch('/loadJokes', {
       method: 'POST',
       headers: { 'Content-Type' : 'application/json' },
-      body: JSON.stringify({ loaded : jokes_loaded})
+      body: JSON.stringify(loadData)
     });
     const post = await res.text();
     document.getElementById('feedBox').innerHTML += post;
     jokes_loaded++;
-    // console.log(jokes_loaded)
   }
+}
+
+async function timeoutButton(btn) {
+  btn.disabled = true;
+  
+  setTimeout(() => {
+    btn.disabled = false;
+  }, 3000);
 }
