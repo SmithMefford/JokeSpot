@@ -215,6 +215,19 @@ app.post('/admin/delete/:jokeId', onlyUser0, async (req, res) => {
   }
 });
 
+app.post('/admin/delete-user/:username', onlyUser0, async (req, res) => {
+  try {
+    await db.none(
+      'DELETE FROM users WHERE username = $1',
+      [req.params.username]
+    );
+    res.redirect('/admin');
+  } catch (error) {
+    console.error(error);
+    res.redirect('/admin');
+  }
+});
+
 app.post('/register', async (req, res) => {
   try {
     const hash = await bcrypt.hash(req.body.password, 10);
