@@ -61,13 +61,13 @@ document.addEventListener("submit", async (event) => {
       const searchData = Object.fromEntries((new FormData(e)).entries());
       
       const response = await fetch('/getJokeCount');
-      console.log(response)
+      //console.log(response)
       const countData = await response.json();
       const jokesInDB = countData.count;
 
       jokes_loaded = 0;
 
-      loadJokes(50, searchData)
+      loadJokes(jokesInDB, searchData)
       break;
     case "rateJoke":
       event.preventDefault();
@@ -139,9 +139,10 @@ document.addEventListener("submit", async (event) => {
 
 // Check if a certain element was loaded
 document.addEventListener("DOMContentLoaded", async () => {
-    const target = document.getElementById("feed_page");
-    if (target) {
-      loadJokes(10)
+  if (document.getElementById("feed_page")) {
+    loadJokes(10);
+  } else if (document.getElementById("leaderboardPage")) {
+    loadUsers();
   }
 });
 
@@ -167,6 +168,22 @@ async function loadJokes(amount, searchParams = {}) {
     const post = await res.text();
     document.getElementById('feedBox').innerHTML += post;
     jokes_loaded++;
+  }
+}
+
+async function loadUsers() {
+  const numOfAccounts = await fetch('/getAccountCount');
+  const countData = await numOfAccounts.json();
+  const count = countData.count;
+  //console.log(count)
+  for (let i = 0; i < count; i++) {
+    const res = await fetch('/loadLeaderboardElement', {
+      method: 'POST',
+      headers: { 'Content-Type' : 'application/json' },
+      body: JSON.stringify({ elementsLoaded : i })
+    });
+    const userElement = await res.text();
+    document.getElementById('leaderboardBox').innerHTML += userElement;
   }
 }
 

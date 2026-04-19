@@ -583,10 +583,39 @@ app.post('/loadJokes', async (req,res) => {
   }
 });
 
+app.post('/loadLeaderboardElement', async (req,res) => {
+  try {
+    const data = req.body;
+    const elementsLoaded = data.elementsLoaded;
+    let searchQuery = '';
+    console.log(data)
+
+    const queryUserInfo = `SELECT * FROM users ORDER BY username ASC LIMIT 1 OFFSET ${elementsLoaded};`;
+    const user = await db.oneOrNone(queryUserInfo);
+    res.render('partials/user.hbs', {
+      layout: false,
+      username: user.username,
+      profilePicture: user.profile_photo_url
+    });
+  } catch (err) {
+    res.status(500);
+  }
+});
+
 app.get('/getJokeCount', async (req,res) => {
   try {
     const jokeCount = `SELECT Count(*) FROM jokes;`;
     const count = await db.one(jokeCount)
+    res.send(count);
+  } catch (err) {
+    res.status(500)
+  }
+});
+
+app.get('/getAccountCount', async (req,res) => {
+  try {
+    const accountCount = `SELECT Count(*) FROM users;`;
+    const count = await db.one(accountCount)
     res.send(count);
   } catch (err) {
     res.status(500)
