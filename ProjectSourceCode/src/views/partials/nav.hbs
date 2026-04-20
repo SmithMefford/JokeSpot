@@ -70,6 +70,7 @@
     <a href="/home" class="btn btn-primary henny-penny-regular">Home</a>
     <a href="/feed" class="btn btn-purple btn-secondary henny-penny-regular">Feed</a>
     <a href="/leaderboards" class="btn btn-success henny-penny-regular">Leaderboards</a>
+    <a href="/jokecreate" class="btn btn-orange btn-secondary henny-penny-regular">Post a Joke</a>
     {{#if user}}
       {{#if (eq user.username "user0")}}
         <a href="/admin" class="btn btn-danger henny-penny-regular">Administrator Panel</a>
@@ -82,6 +83,7 @@
     class="img-fluid rounded"
     style="max-height: 150px;"
   >
+  <p class="henny-penny-regular">The jokes pot is at the end of the punchline.</p>
   </div>
     <div class="mt-auto d-flex flex-column gap-2">
     {{#if user}}
