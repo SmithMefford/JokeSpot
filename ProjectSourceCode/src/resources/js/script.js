@@ -165,8 +165,17 @@ async function loadJokes(amount, searchParams = {}) {
       headers: { 'Content-Type' : 'application/json' },
       body: JSON.stringify(loadData)
     });
+
+    
+    if (res.status == 404) {
+      let error = await res.text();
+      document.getElementById('feedBox').innerHTML += error;
+      return
+    }
+
     const post = await res.text();
     document.getElementById('feedBox').innerHTML += post;
+
     jokes_loaded++;
   }
 }
