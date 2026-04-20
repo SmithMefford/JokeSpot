@@ -12,7 +12,11 @@
         <textarea id="tags" name="tags" rows="2" cols="60" placeholder="Type your tags here... (e.g. tag_1,tag_2,tag_3)" style="text-align: center;, cursive;"></textarea>
     </div>
     <div style="margin-top: 15px;">
-        <button type="submit" class="henny-penny-regular btn-purple my-2" style="font-size: 1rem; padding: 0.75rem 1.5rem;">Post Joke</button>
+        {{!-- Disabled until profanity list loads --}}
+        <button type="button" id="postBtn" class="henny-penny-regular btn-purple my-2" 
+                style="font-size: 1rem; padding: 0.75rem 1.5rem;" disabled>
+            Loading...
+        </button>
     </div>
 </form>
 
@@ -23,3 +27,85 @@
 <form action="/home" method="GET" style="text-align: center; margin-top: 20px; margin-bottom: 20px;">
     <button type="submit" class="henny-penny-regular btn-purple" style="font-size: 1rem; padding: 0.75rem 1.5rem;">Back to Home</button>
 </form>
+
+{{!-- Profanity confirmation modal --}}
+<div class="modal fade" id="profanityConfirmModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h4>⚠️ Profanity Detected</h4>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <p>Your joke contains profanity. It will be automatically censored before being posted.</p>
+                <p>Do you want to post it anyway?</p>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary henny-penny-regular" data-bs-dismiss="modal">Go Back & Edit</button>
+                <button type="button" class="btn btn-purple henny-penny-regular" id="confirmPostBtn">Post Anyway</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+let PROFANITY_REGEX = null;
+let confirmModal    = null;
+
+const jokeForm   = document.getElementById('postJoke');
+const textarea   = document.getElementById('jokeContent');
+const postBtn    = document.getElementById('postBtn');
+const confirmBtn = document.getElementById('confirmPostBtn');
+
+// Block submission entirely until the word list is ready
+fetch('/profanityList')
+    .then(res => res.json())
+    .then(list => {
+        const sorted = [...list].sort((a, b) => b.length - a.length);
+        const parts  = sorted.map(word => {
+            const escaped = word.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+            const prefix  = /\w/.test(word[0])                ? '(?<!\\w)' : '';
+            const suffix  = /\w/.test(word[word.length - 1])  ? '(?!\\w)'  : '';
+            return `${prefix}${escaped}${suffix}`;
+        });
+        PROFANITY_REGEX = new RegExp(parts.join('|'), 'gi');
+
+        // Only now allow the user to post
+        postBtn.disabled    = false;
+        postBtn.textContent = 'Post Joke';
+    })
+    .catch(() => {
+        // If the list fails to load, allow posting without the check
+        postBtn.disabled    = false;
+        postBtn.textContent = 'Post Joke';
+    });
+
+function submitForm() {
+    jokeForm.submit();
+}
+
+// Use a plain button + manual check instead of form submit event
+postBtn.addEventListener('click', () => {
+    PROFANITY_REGEX.lastIndex = 0;
+
+    if (PROFANITY_REGEX.test(textarea.value)) {
+        if (!confirmModal) {
+            confirmModal = new bootstrap.Modal(
+                document.getElementById('profanityConfirmModal')
+            );
+        }
+        confirmModal.show();
+    } else {
+        submitForm();
+    }
+});
+
+confirmBtn.addEventListener('click', () => {
+    confirmModal.hide();
+    document.getElementById('profanityConfirmModal').addEventListener(
+        'hidden.bs.modal',
+        submitForm,
+        { once: true }
+    );
+});
+</script>

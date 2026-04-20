@@ -105,7 +105,7 @@ document.addEventListener("submit", async (event) => {
 
         const messageBox = document.getElementById("messageBox");
 
-        try {  // needs to be worked on!!!
+        try {
             const res = await fetch("/jokecreate", {
                 method: "POST",
                 headers: {

@@ -10,6 +10,8 @@ const pgp = require('pg-promise')();
 const bodyParser = require('body-parser');
 const session = require('express-session');
 const bcrypt = require('bcryptjs');
+const { hasProfanity, censorText } = require('./profanityFilter');
+const fs = require('fs');
 
 // *****************************************************
 // Section 2: Configure Handlebars & Database
@@ -119,20 +121,34 @@ app.get('/register', (req, res) => {
 });
 
 // Home page (protected)
-app.get('/home', (req, res) => {
-  //array of jokes that can be coded from the database for joke of the day
-  const jokes = [
-    "My IQ test finally came back! My score was negative.",
-    "A man walks into a bar and says, 'Ouch!'"
-  ];
-  //"Another man walks into a bar and says, 'Why did they put this here?'"
+app.get('/home', async (req, res) => {
+  // Retrieve Joke of the Day from the Database (seed by day of epoch)
+  try {
+    const jokeOfTheDay = await db.one(
+        `SELECT * FROM jokes ORDER BY id 
+        OFFSET (
+            FLOOR(EXTRACT(EPOCH FROM CURRENT_DATE) / 86400)::int
+            % (SELECT COUNT(*) FROM jokes)
+        )
+        LIMIT 1`
+    );
 
-  res.render('pages/home', {
-    user: res.locals.user,
-    message: 'Welcome to JokeSpot!',
-    error: false,
-    jokes   // <-- pass jokes array to Handlebars
-  });
+    res.render('pages/home', {
+        user: res.locals.user,
+        message: jokeOfTheDay.content,
+        error: false
+    });
+  }
+  catch (err) {
+    console.error(err);  // log error
+
+    res.render('pages/home', {
+        user: res.locals.user,
+        message: 'Joke\'s on us: Failed to retrieve the Joke of the Day.',
+        error: true
+    });
+  }
+  
 });
 
 app.get('/admin', onlyUser0, async (req, res) => {
@@ -347,25 +363,40 @@ app.get('/jokecreate', auth, (req,res) => {
   });
 });
 
-app.post('/jokecreate', auth, async (req,res) => {
-    const { jokeContent, tags } = req.body;
+app.post('/jokecreate', auth, async (req, res) => {
+  const { jokeContent, tags } = req.body;
 
-    if (!jokeContent) {  // should we require a tag?
-        return res.status(400).send("Missing field");
-    }
+  if (!jokeContent) {
+    return res.status(400).send("Missing field");
+  }
 
-    try {
-        // database insert
-        await db.query(
-            "INSERT INTO jokes (author, content, tags) VALUES ($1, $2, $3)",
-            [req.session.user.username, jokeContent, tags]
-        );
+  try {
+    const censored = hasProfanity(jokeContent)
+      ? censorText(jokeContent)
+      : jokeContent;
 
-        res.sendStatus(200);
+    await db.none(
+      `INSERT INTO jokes (author, content, censored_content, tags)
+       VALUES ($1, $2, $3, $4)`,
+      [req.session.user.username, jokeContent, censored, tags]
+    );
 
-    } catch (err) {
-        res.sendStatus(500);
-    }
+    res.redirect('/home');
+  } catch (err) {
+    console.error(err);
+    res.sendStatus(500);
+  }
+});
+
+app.get('/profanityList', (req, res) => {
+  const filePath = path.join(__dirname, 'resources', 'filters', 'profanity_censor.csv');
+  const raw = fs.readFileSync(filePath, 'utf8');
+  const words = raw
+    .split('\n')
+    .slice(1)
+    .map(line => line.trim().replace(/\r/g, ''))
+    .filter(Boolean);
+  res.json(words);
 });
 
 app.get('/leaderboards', (req,res) => {
@@ -548,38 +579,52 @@ app.post('/reportJoke', async (req, res) => {
 // Prepares the partial and then sends it to the client to be inserted dynamically
 // Later, we can modify this to retrieve data from the DB, populate the post partial,
 // then send it back to the client.
-app.post('/loadJokes', async (req,res) => {
+app.post('/loadJokes', async (req, res) => {
   try {
-    const data = req.body;
+    const data         = req.body;
     const jokes_loaded = data.loaded;
-    let searchQuery = '';
-    console.log(data)
+    let searchQuery    = '';
 
     if ("searchType" in data) {
       const search = data.searchBar;
-      const type = data.searchType;
-      if (type == 'content') {
-        searchQuery = `WHERE content ILIKE '%${search}%'`;
-      }
-      else {
-        searchQuery = `WHERE tags ILIKE '%${search}%'`;
-      }
+      const type   = data.searchType;
+      searchQuery  = type === 'content'
+        ? `WHERE content ILIKE '%${search}%'`
+        : `WHERE tags ILIKE '%${search}%'`;
     }
 
-    const queryJoke = `SELECT * FROM jokes ${searchQuery} ORDER BY timestamp DESC, id DESC LIMIT 1 OFFSET ${jokes_loaded};`;
-    const joke = await db.oneOrNone(queryJoke);
-    const queryPFP = `SELECT profile_photo_url FROM users WHERE users.username = '${joke.author}';`;
-    const photo = await db.oneOrNone(queryPFP);
+    const joke = await db.oneOrNone(
+      `SELECT * FROM jokes ${searchQuery}
+       ORDER BY timestamp DESC, id DESC
+       LIMIT 1 OFFSET $1`,
+      [jokes_loaded]
+    );
+
+    if (!joke) return res.status(404).send('No more jokes');
+
+    const photo = await db.oneOrNone(
+      `SELECT profile_photo_url FROM users WHERE username = $1`,
+      [joke.author]
+    );
+
+    // Respect the viewing user's profanity filter preference
+    const filterOn  = req.session.user?.profanity_filter ?? true;
+    const displayed = filterOn
+      ? (joke.censored_content || joke.content)   // fall back if censored_content is null
+      : joke.content;
+
     res.render('partials/post.hbs', {
-      layout: false,
-      jokeID: joke.id,
-      username: joke.author,
-      profilePicture: photo.profile_photo_url,
-      timestamp: joke.timestamp,
-      content: joke.content
+      layout:         false,
+      jokeID:         joke.id,
+      username:       joke.author,
+      profilePicture: photo?.profile_photo_url,
+      timestamp:      joke.timestamp,
+      content:        displayed,
+      hasProfanity:   joke.censored_content !== joke.content
     });
   } catch (err) {
-    res.status(500);
+    console.error(err);
+    res.status(500).send('Failed to load jokes');
   }
 });
 

@@ -13,6 +13,7 @@ CREATE TABLE IF NOT EXISTS jokes (
     author varchar(60) NOT NULL,
     FOREIGN KEY (author) REFERENCES users (username) ON DELETE CASCADE,
     content varchar(500) NOT NULL,
+    censored_content varchar(500),
     timestamp TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     tags varchar(200)
 );
