@@ -134,7 +134,7 @@
 
   function confirmDelete(username) {
     document.getElementById('modal-username').textContent = username;
-    document.getElementById('delete-user-form').action = '/admin/delete-user/' + username;d
+    document.getElementById('delete-user-form').action = '/admin/delete-user/' + username;
     new bootstrap.Modal(document.getElementById('deleteUserModal')).show();
   }
 </script>
