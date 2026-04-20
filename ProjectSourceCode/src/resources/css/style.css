@@ -36,6 +36,17 @@
   color: white;
 }
 
+.btn-orange {
+  background-color: #fd7e14;  /* Bootstrap orange */
+  color: white;
+  border: none;
+}
+
+.btn-orange:hover {
+  background-color: #e96b02;
+  color: white;
+}
+
 /* The switch - the box around the slider */
 .switch {
   position: relative;
