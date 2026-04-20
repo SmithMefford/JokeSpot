@@ -1,23 +1,32 @@
 <div class="container my-5">
 
-    {{#if user}}
-    <h2 class="text-center mb-3 henny-penny-regular">Welcome, {{user.username}}!</h2>
-    {{/if}}
+    
+    <h2 class="text-center mb-3 henny-penny-regular" style="color:green;">
+        Welcome{{#if user}}, {{user.username}},{{/if}} to JokeSpot!
+    </h2>
 
-    {{#if message}}
-      <p class="text-center text-success henny-penny-regular">{{message}}</p>
-    {{/if}}
+    <!-- message on the homepage will be the joke of the day -->
 
-    <h3 class="text-center mt-4 mb-4 henny-penny-regular">Jokes of the Day</h3>
+    <h3 class="text-center mt-4 mb-4 henny-penny-regular"><u>The Joke of the Day</u></h3>
 
     <div class="d-flex flex-column align-items-center gap-3">
-        {{#each jokes}}
-        <div class="card text-center" style="width: 35rem; font-size: 1.25rem; padding: 1.5rem;">
+
+        <div class="card text-center" style="width: 75rem; font-size: 2rem; padding: 1.5rem;">
             <div class="card-body">
-                {{this}}
+                {{#if message}}
+                    {{message}}
+                {{/if}}
+                {{#else}}
+                    Error: Joke of the Day is unavailable.
+                {{/else}}
             </div>
         </div>
-        {{/each}}
+
+        <div class="card text-center mt-4" style="width: 20rem; font-size: 1.25rem;">
+            <div class="card-body">
+                Think you can do better?
+            </div>
+        </div>
     </div>
     <div class="text-center my-4">
   <a href="/jokecreate" class="btn btn-primary btn-purple henny-penny-regular" style="font-size: 1.25rem; padding: 0.75rem 1.5rem;">

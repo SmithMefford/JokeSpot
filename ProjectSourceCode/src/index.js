@@ -119,20 +119,29 @@ app.get('/register', (req, res) => {
 });
 
 // Home page (protected)
-app.get('/home', (req, res) => {
-  //array of jokes that can be coded from the database for joke of the day
-  const jokes = [
-    "My IQ test finally came back! My score was negative.",
-    "A man walks into a bar and says, 'Ouch!'"
-  ];
-  //"Another man walks into a bar and says, 'Why did they put this here?'"
+app.get('/home', async (req, res) => {
+  // Retrieve Joke of the Day from the Database
+  try {
+    const jokeOfTheDay = await db.one(
+        'SELECT * FROM jokes ORDER BY RANDOM() LIMIT 1'
+    );
 
-  res.render('pages/home', {
-    user: res.locals.user,
-    message: 'Welcome to JokeSpot!',
-    error: false,
-    jokes   // <-- pass jokes array to Handlebars
-  });
+    res.render('pages/home', {
+        user: res.locals.user,
+        message: jokeOfTheDay.content,
+        error: false
+    });
+  }
+  catch (err) {
+    console.error(err);  // log error
+
+    res.render('pages/home', {
+        user: res.locals.user,
+        message: 'Joke\'s on us: Failed to retrieve the Joke of the Day.',
+        error: true
+    });
+  }
+  
 });
 
 app.get('/admin', onlyUser0, async (req, res) => {
