@@ -43,6 +43,7 @@ app.use(
     secret: process.env.SESSION_SECRET || 'superdupersecret!',
     saveUninitialized: false,
     resave: false,
+    // no name set, cookie name defaults to: 'connect.sid'
   })
 );
 app.use((req, res, next) => {
@@ -112,7 +113,11 @@ app.get('/', (req, res) => {
 
 // Login page
 app.get('/login', (req, res) => {
-  res.status(200).render('pages/login');
+  res.render('pages/login', {
+    // sends logout message if boolean true
+    message: req.query.logout ? "Logged out successfully!" : null,
+    error: false
+  });  // status 200 is success
 });
 
 // Register page
@@ -317,15 +322,14 @@ app.post('/login', async (req, res) => {
 
 // Logout
 app.get('/logout', auth, (req, res) => {
-  req.session.destroy((err) => {
+  req.session.destroy((err) => {  // deletes session reference on server
     if (err) {
       console.log(err);  // log possible error
       return res.status(400).redirect('/home');  // stay on the home page (could also display fail message)
     }
-    res.status(200).render('pages/login', {  // sends you to login upon logout
-      message: "Logged out successfully!",
-      error: false
-    });
+
+    res.clearCookie('connect.sid');  // deletes session reference on browser (client side)
+    return res.redirect('/login?logout=1');  // sends you to login upon logout + sets boolean
   });
 });
 
