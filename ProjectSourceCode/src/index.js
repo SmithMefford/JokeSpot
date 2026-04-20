@@ -120,10 +120,15 @@ app.get('/register', (req, res) => {
 
 // Home page (protected)
 app.get('/home', async (req, res) => {
-  // Retrieve Joke of the Day from the Database
+  // Retrieve Joke of the Day from the Database (seed by day of epoch)
   try {
     const jokeOfTheDay = await db.one(
-        'SELECT * FROM jokes ORDER BY RANDOM() LIMIT 1'
+        `SELECT * FROM jokes ORDER BY id 
+        OFFSET (
+            FLOOR(EXTRACT(EPOCH FROM CURRENT_DATE) / 86400)::int
+            % (SELECT COUNT(*) FROM jokes)
+        )
+        LIMIT 1`
     );
 
     res.render('pages/home', {
