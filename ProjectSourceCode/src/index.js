@@ -604,7 +604,13 @@ app.post('/loadJokes', async (req, res) => {
       [jokes_loaded]
     );
 
-    if (!joke) return res.status(404).send('No more jokes');
+    if (!joke) {
+      return res.status(404).render('partials/message.hbs', {
+        layout: false,
+        error: true,
+        message: 'No more jokes...'
+      });
+    }
 
     const photo = await db.oneOrNone(
       `SELECT profile_photo_url FROM users WHERE username = $1`,
@@ -627,8 +633,17 @@ app.post('/loadJokes', async (req, res) => {
       hasProfanity:   joke.censored_content !== joke.content
     });
   } catch (err) {
+    res.render('partials/post.hbs', {
+      layout:         false,
+      jokeID:         joke.id,
+      username:       joke.author,
+      profilePicture: photo?.profile_photo_url,
+      timestamp:      joke.timestamp,
+      content:        displayed,
+      hasProfanity:   joke.censored_content !== joke.content
+    });
     console.error(err);
-    res.status(500).send('Failed to load jokes');
+    res.status(500);
   }
 });
 
@@ -657,7 +672,7 @@ app.get('/getJokeCount', async (req,res) => {
     const count = await db.one(jokeCount)
     res.send(count);
   } catch (err) {
-    res.status(500)
+    res.status(500);
   }
 });
 
@@ -667,7 +682,7 @@ app.get('/getAccountCount', async (req,res) => {
     const count = await db.one(accountCount)
     res.send(count);
   } catch (err) {
-    res.status(500)
+    res.status(500);
   }
 });
 
