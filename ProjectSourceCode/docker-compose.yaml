@@ -8,4 +8,9 @@ services:
     ports:
       - "5432:5432"    # <-- THIS IS THE MISSING PIECE!
     volumes:
-      - ./src/init_data:/docker-entrypoint-initdb.d
+      - ./:/home/node/app
+    command: 'npm start'
+    restart: unless-stopped
+
+volumes:
+  jokespot-db:

@@ -1,6 +1,3 @@
 node_modules/
 .env
-# Ignore all user-uploaded profile pictures
-src/resources/img/pfp/*
-# Do not ignore the directory itself
-!src/resources/img/pfp/.gitkeep
+src/init_db.sh

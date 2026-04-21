@@ -36,6 +36,17 @@
   color: white;
 }
 
+.btn-orange {
+  background-color: #fd7e14;  /* Bootstrap orange */
+  color: white;
+  border: none;
+}
+
+.btn-orange:hover {
+  background-color: #e96b02;
+  color: white;
+}
+
 /* The switch - the box around the slider */
 .switch {
   position: relative;
@@ -90,6 +101,14 @@ input:checked + .slider:before {
   transform: translateX(26px);
 }
 
+input[type="checkbox"] {
+  -webkit-appearance: none;
+}
+
+input[type="checkbox"]:checked + label {
+  color: red;
+}
+
 /* Rounded sliders */
 .slider.round {
   border-radius: 34px;
@@ -100,8 +119,9 @@ input:checked + .slider:before {
 }
 
 body.dark-mode {
-  background-color: #121212;
-  color: #eaeaea;
+  --bs-body-bg: #121212;
+  --bs-body-color: #eaeaea;
+  --bs-secondary-color: #cfcfcf;
 }
 
 body.dark-mode .card {
@@ -139,4 +159,39 @@ body.dark-mode .card-footer {
 
 body.dark-mode .card-footer button {
   color: #eaeaea;
+}
+
+body.dark-mode .table {
+  --bs-table-bg: #1a1a1a;
+  --bs-table-color: #eaeaea;
+  --bs-table-border-color: #333;
+}
+
+body.dark-mode .table thead {
+  color: #eaeaea;
+}
+
+body.dark-mode .table td,
+body.dark-mode .table th {
+  border-color: #333;
+}
+
+body.dark-mode .text-muted {
+  color: #b5b5b5;
+}
+
+body.dark-mode .text-danger {
+  color: #ff6b6b;
+}
+
+body.dark-mode .text-warning {
+  color: #ffd166;
+}
+
+body.dark-mode .small {
+  color: #cfcfcf;
+}
+
+body.dark-mode .text-muted {
+  color: #cfcfcf;
 }

@@ -12,7 +12,7 @@ const session = require('express-session');
 const bcrypt = require('bcryptjs');
 const { hasProfanity, censorText } = require('./profanityFilter');
 const fs = require('fs');
-const multer = require('multer'); 
+const multer = require('multer');
 
 // *****************************************************
 // Section 2: Configure Handlebars & Database
