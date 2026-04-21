@@ -63,6 +63,7 @@ app.use(
     resave: false,
   })
 );
+
 app.use((req, res, next) => {
     res.locals.user = req.session.user || null;
     next();
@@ -399,6 +400,7 @@ app.post('/jokecreate', auth, async (req, res) => {
   }
 
   try {
+    // Soft catch: Censor profanity if present
     const censored = hasProfanity(jokeContent)
       ? censorText(jokeContent)
       : jokeContent;
@@ -418,13 +420,38 @@ app.post('/jokecreate', auth, async (req, res) => {
 
 app.get('/profanityList', (req, res) => {
   const filePath = path.join(__dirname, 'resources', 'filters', 'profanity_censor.csv');
-  const raw = fs.readFileSync(filePath, 'utf8');
-  const words = raw
-    .split('\n')
-    .slice(1)
-    .map(line => line.trim().replace(/\r/g, ''))
-    .filter(Boolean);
-  res.json(words);
+  try {
+    const raw = fs.readFileSync(filePath, 'utf8');
+    const words = raw
+      .split('\n')
+      .slice(1)
+      .map(line => line.trim().replace(/\r/g, ''))
+      .filter(Boolean);
+    res.json(words);
+  } catch (err) {
+    console.error("Error reading profanity list:", err);
+    res.json([]);
+  }
+});
+
+app.get('/hateSpeechList', (req, res) => {
+  try {
+    const filePath = path.join(__dirname, 'resources', 'filters', 'hate_speech_block.csv');
+    if (fs.existsSync(filePath)) {
+      const raw = fs.readFileSync(filePath, 'utf8');
+      const words = raw
+        .split('\n')
+        .slice(1) // Skip CSV header
+        .map(line => line.trim().replace(/\r/g, ''))
+        .filter(Boolean);
+      res.json(words);
+    } else {
+      res.json([]); 
+    }
+  } catch (error) {
+    console.error("Error reading hate speech list:", error);
+    res.json([]);
+  }
 });
 
 app.get('/leaderboards', (req,res) => {
@@ -483,7 +510,8 @@ app.post('/settings', auth, async (req, res) => {
 // Section 4.1: Profile Routes
 // *****************************************************
 
-app.get('/profile/edit', auth, async (req, res) => {
+// Profile Edit page (GET)
+app.get('/profile-edit', auth, async (req, res) => {
   try {
     const user = await db.one('SELECT * FROM users WHERE username = $1', [req.session.user.username]);
     res.status(200).render('pages/profile-edit', {
@@ -495,7 +523,8 @@ app.get('/profile/edit', auth, async (req, res) => {
   }
 });
 
-app.post('/profile/edit', auth, upload.single('profile_picture'), async (req, res) => {
+// Profile Edit page (POST) - Updates database
+app.post('/profile-edit', auth, upload.single('profile_picture'), async (req, res) => {
   try {
     const isPrivate = req.body.is_private === 'on';
     
@@ -514,10 +543,11 @@ app.post('/profile/edit', auth, upload.single('profile_picture'), async (req, re
     res.redirect('/profile');
   } catch (error) {
     console.error(error);
-    res.redirect('/profile/edit');
+    res.redirect('/profile-edit');
   }
 });
 
+// Profile page (Dynamic based on username parameter)
 app.get('/profile/:username?', auth, async (req, res) => {
   try {
     const targetUsername = req.params.username || req.session.user.username;
@@ -555,8 +585,8 @@ app.get('/profile/:username?', auth, async (req, res) => {
       profile_photo_url: profileUser.profile_photo_url,
       is_private_view: isPrivateView,
       is_owner: isOwner,
-      total_likes: stats ? stats.total_likes : 0, // Injected Dynamic Stats
-      rank: stats ? stats.rank : '-',             // Injected Dynamic Rank
+      total_likes: stats ? stats.total_likes : 0, 
+      rank: stats ? stats.rank : '-',             
       rating_title: "Open Mic Rookie"
     });
   } catch (error) {
@@ -619,6 +649,7 @@ app.post('/loadJokes', async (req, res) => {
     const jokes_loaded = data.loaded || 0;
     let searchQuery    = '';
     
+    // Sort logic from your feature branch
     const sortOrder = data.sortOrder === 'oldest' ? 'ASC' : 'DESC';
 
     if ("searchType" in data && data.searchBar) {
