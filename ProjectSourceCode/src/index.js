@@ -10,7 +10,9 @@ const pgp = require('pg-promise')();
 const bodyParser = require('body-parser');
 const session = require('express-session');
 const bcrypt = require('bcryptjs');
-const multer = require('multer'); // For profile picture uploads
+const { hasProfanity, censorText } = require('./profanityFilter');
+const fs = require('fs');
+const multer = require('multer'); 
 
 // *****************************************************
 // Section 2: Configure Handlebars & Database
@@ -36,11 +38,15 @@ app.use('/css', express.static(path.join(__dirname, 'resources', 'css')));
 app.use('/js', express.static(path.join(__dirname, 'resources', 'js')));
 app.use('/img', express.static(path.join(__dirname, 'resources', 'img')));
 
+const pfpDir = path.join(__dirname, 'resources', 'img', 'pfp');
+if (!fs.existsSync(pfpDir)) {
+  fs.mkdirSync(pfpDir, { recursive: true });
+}
+
 // Set up Multer for image uploads
 const storage = multer.diskStorage({
   destination: function (req, file, cb) {
-    // Save files to the ignored pfp/ subdirectory to avoid cross-platform Git issues
-    cb(null, path.join(__dirname, 'resources', 'img', 'pfp')); 
+    cb(null, pfpDir); 
   },
   filename: function (req, file, cb) {
     const ext = path.extname(file.originalname);
@@ -52,7 +58,7 @@ const upload = multer({ storage: storage });
 // Session setup
 app.use(
   session({
-    secret: 'temporary-secret', // simplified for dev
+    secret: process.env.SESSION_SECRET || 'superdupersecret!',
     saveUninitialized: false,
     resave: false,
   })
@@ -64,11 +70,12 @@ app.use((req, res, next) => {
 
 // Database config
 const dbConfig = {
-  host: 'localhost',
-  port: 5432,
-  database: process.env.POSTGRES_DB || 'jokespot',
-  user: process.env.POSTGRES_USER || 'postgres',
-  password: process.env.POSTGRES_PASSWORD || 'pwd',
+  host: process.env.POSTGRES_HOST,
+  port: process.env.POSTGRES_PORT || 5432,
+  database: process.env.POSTGRES_DB,
+  user: process.env.POSTGRES_USER,
+  password: process.env.POSTGRES_PASSWORD,
+  ssl: process.env.NODE_ENV === 'production' ? { rejectUnauthorized: false } : false
 };
 
 const db = pgp(dbConfig);
@@ -84,7 +91,7 @@ db.connect()
   });
 
 // *****************************************************
-// Section 3: Middleware
+// Section 3: Middleware & Helpers
 // *****************************************************
 
 const auth = (req, res, next) => {
@@ -107,43 +114,77 @@ const onlyUser0 = (req, res, next) => {
   next();
 };
 
+function timeAgo(date) {
+  if (!date) return "Unknown time";
+  const seconds = Math.floor((new Date() - new Date(date)) / 1000);
+  
+  if (seconds < 60) return "Just now";
+  
+  const intervals = [
+    { label: 'year', seconds: 31536000 },
+    { label: 'month', seconds: 2592000 },
+    { label: 'day', seconds: 86400 },
+    { label: 'hour', seconds: 3600 },
+    { label: 'minute', seconds: 60 }
+  ];
+  
+  for (let i = 0; i < intervals.length; i++) {
+    const interval = Math.floor(seconds / intervals[i].seconds);
+    if (interval >= 1) {
+      return `${interval} ${intervals[i].label}${interval !== 1 ? 's' : ''} ago`;
+    }
+  }
+  return "Just now";
+}
+
 // *****************************************************
 // Section 4: Routes
 // *****************************************************
 
-// Dummy api to test that server.spec connects to index
 app.get('/welcome', (req, res) => {
   res.json({status: 'success', message: 'Welcome!'});
 });
 
-// Redirect root to login
 app.get('/', (req, res) => {
   res.redirect('/home');
 });
 
-// Login page
 app.get('/login', (req, res) => {
-  res.render('pages/login');
+  res.render('pages/login', {
+    message: req.query.logout ? "Logged out successfully!" : null,
+    error: false
+  });  
 });
 
-// Register page
 app.get('/register', (req, res) => {
   res.render('pages/register');
 });
 
-// Home page (protected)
-app.get('/home', (req, res) => {
-  const jokes = [
-    "My IQ test finally came back! My score was negative.",
-    "A man walks into a bar and says, 'Ouch!'"
-  ];
+app.get('/home', async (req, res) => {
+  try {
+    const jokeOfTheDay = await db.one(
+        `SELECT * FROM jokes ORDER BY id 
+        OFFSET (
+            FLOOR(EXTRACT(EPOCH FROM CURRENT_DATE) / 86400)::int
+            % (SELECT COUNT(*) FROM jokes)
+        )
+        LIMIT 1`
+    );
 
-  res.render('pages/home', {
-    user: res.locals.user,
-    message: 'Welcome to JokeSpot!',
-    error: false,
-    jokes   
-  });
+    res.render('pages/home', {
+        user: res.locals.user,
+        message: jokeOfTheDay.content,
+        error: false
+    });
+  }
+  catch (err) {
+    console.error(err);
+    res.render('pages/home', {
+        user: res.locals.user,
+        message: 'Joke\'s on us: Failed to retrieve the Joke of the Day.',
+        error: true
+    });
+  }
 });
 
 app.get('/admin', onlyUser0, async (req, res) => {
@@ -226,6 +267,19 @@ app.post('/admin/delete/:jokeId', onlyUser0, async (req, res) => {
   }
 });
 
+app.post('/admin/delete-user/:username', onlyUser0, async (req, res) => {
+  try {
+    await db.none(
+      'DELETE FROM users WHERE username = $1',
+      [req.params.username]
+    );
+    res.redirect('/admin');
+  } catch (error) {
+    console.error(error);
+    res.redirect('/admin');
+  }
+});
+
 app.post('/register', async (req, res) => {
   try {
     const hash = await bcrypt.hash(req.body.password, 10);
@@ -239,17 +293,21 @@ app.post('/register', async (req, res) => {
     ];
     const randomAvatar = defaultAvatars[Math.floor(Math.random() * defaultAvatars.length)];
 
+    const profanityFilterEnabled = req.body.profanity_filter === "true";
+
     await db.none(
-      'INSERT INTO users(username, password, profile_photo_url) VALUES($1, $2, $3)',
-      [req.body.username, hash, randomAvatar]
+      'INSERT INTO users(username, password, profile_photo_url, profanity_filter) VALUES($1, $2, $3, $4)',
+      [req.body.username, hash, randomAvatar, profanityFilterEnabled]
     );
     const user = await db.one(
       'SELECT * FROM users WHERE username = $1',
       [req.body.username]
     );
+
     req.session.user = user;
     req.session.save();
-    return res.status(200).redirect('/home');
+
+    return res.redirect('/home');
   } catch (error) {
     res.status(400).render('pages/register', {
       message: 'That account already exists!',
@@ -288,15 +346,14 @@ app.post('/login', async (req, res) => {
 });
 
 app.get('/logout', auth, (req, res) => {
-  req.session.destroy((err) => {
+  req.session.destroy((err) => { 
     if (err) {
-      console.log(err);  
-      return res.status(400).redirect('/home');  
+      console.log(err);
+      return res.status(400).redirect('/home');
     }
-    res.status(200).render('pages/login', {  
-      message: "Logged out successfully!",
-      error: false
-    });
+
+    res.clearCookie('connect.sid');
+    return res.redirect('/login?logout=1');
   });
 });
 
@@ -323,6 +380,67 @@ app.get('/settings', auth, async (req, res) => {
       message: 'Error loading settings',
       error: true
     });
+  }
+});
+
+app.get('/jokecreate', auth, (req,res) => {
+  res.render('pages/jokecreate', {
+    user: res.locals.user,
+    message: 'post your joke!',
+    error: false
+  });
+});
+
+app.post('/jokecreate', auth, async (req, res) => {
+  const { jokeContent, tags } = req.body;
+
+  if (!jokeContent) {
+    return res.status(400).send("Missing field");
+  }
+
+  try {
+    const censored = hasProfanity(jokeContent)
+      ? censorText(jokeContent)
+      : jokeContent;
+
+    await db.none(
+      `INSERT INTO jokes (author, content, censored_content, tags)
+       VALUES ($1, $2, $3, $4)`,
+      [req.session.user.username, jokeContent, censored, tags]
+    );
+
+    res.redirect('/home');
+  } catch (err) {
+    console.error(err);
+    res.status(500).send("Error");
+  }
+});
+
+app.get('/profanityList', (req, res) => {
+  const filePath = path.join(__dirname, 'resources', 'filters', 'profanity_censor.csv');
+  const raw = fs.readFileSync(filePath, 'utf8');
+  const words = raw
+    .split('\n')
+    .slice(1)
+    .map(line => line.trim().replace(/\r/g, ''))
+    .filter(Boolean);
+  res.json(words);
+});
+
+app.get('/leaderboards', (req,res) => {
+  res.render('pages/leaderboard', { 
+    user: res.locals.user
+  });
+});
+
+app.get('/feed', auth, (req,res) => {
+  try {
+    res.render('pages/feed', { 
+      user: res.locals.user,
+      error: false
+    });
+  } catch (err) {
+    res.redirect('/login');
   }
 });
 
@@ -365,7 +483,6 @@ app.post('/settings', auth, async (req, res) => {
 // Section 4.1: Profile Routes
 // *****************************************************
 
-// EDIT ROUTES MOVED TO THE TOP TO PREVENT EXPRESS ROUTING CONFLICTS
 app.get('/profile/edit', auth, async (req, res) => {
   try {
     const user = await db.one('SELECT * FROM users WHERE username = $1', [req.session.user.username]);
@@ -386,7 +503,6 @@ app.post('/profile/edit', auth, upload.single('profile_picture'), async (req, re
     let newPhotoUrl = currentUser.profile_photo_url;
 
     if (req.file) {
-        // Path now includes /pfp/
         newPhotoUrl = '/img/pfp/' + req.file.filename;
     }
 
@@ -402,7 +518,6 @@ app.post('/profile/edit', auth, upload.single('profile_picture'), async (req, re
   }
 });
 
-// DYNAMIC PROFILE VIEW ROUTE MOVED TO THE BOTTOM
 app.get('/profile/:username?', auth, async (req, res) => {
   try {
     const targetUsername = req.params.username || req.session.user.username;
@@ -416,18 +531,33 @@ app.get('/profile/:username?', auth, async (req, res) => {
 
     const isPrivateView = profileUser.is_private && !isOwner;
 
-    const average_rating = 4.5;
-    const rank = 10;
-    const rating_title = "Open Mic Rookie";
+    // UPDATED: Dynamically calculate Total Likes and Leaderboard Rank using a CTE Window Function
+    const statsQuery = `
+      WITH UserLikes AS (
+          SELECT u.username, COUNT(jr.joke_id) AS total_likes
+          FROM users u
+          LEFT JOIN jokes j ON u.username = j.author
+          LEFT JOIN joke_reactions jr ON j.id = jr.joke_id AND jr.reaction = 'like'
+          GROUP BY u.username
+      )
+      SELECT total_likes, rank FROM (
+          SELECT username, total_likes, RANK() OVER (ORDER BY total_likes DESC) as rank
+          FROM UserLikes
+      ) ranked
+      WHERE username = $1;
+    `;
+    
+    const stats = await db.oneOrNone(statsQuery, [targetUsername]);
 
     res.render('pages/profile', {
+      display_name: profileUser.display_name || profileUser.username,
       username: profileUser.username,
       profile_photo_url: profileUser.profile_photo_url,
       is_private_view: isPrivateView,
       is_owner: isOwner,
-      average_rating,
-      rank,
-      rating_title
+      total_likes: stats ? stats.total_likes : 0, // Injected Dynamic Stats
+      rank: stats ? stats.rank : '-',             // Injected Dynamic Rank
+      rating_title: "Open Mic Rookie"
     });
   } catch (error) {
     console.error(error);
@@ -439,92 +569,140 @@ app.get('/profile/:username?', auth, async (req, res) => {
 // Section 4.2: Interaction & Post Routes
 // *****************************************************
 
-app.get('/jokecreate', auth, (req,res) => {
-  res.render('pages/jokecreate', {
-    user: res.locals.user,
-    message: 'post your joke!',
-    error: false
-  });
-});
-
-app.post('/create-joke', auth, async (req, res) => {
+app.post('/rateJoke', async (req,res) => {
   try {
-    const { jokeContent, tags } = req.body;
-    await db.none('INSERT INTO jokes(author, content, tags) VALUES($1, $2, $3)', [
-      req.session.user.username, jokeContent, tags || ''
-    ]);
-    res.redirect('/feed');
+    const interaction = req.body.data;
+    const jokeID = Object.values(interaction)[0];
+    const user = req.session.user.username;
+    const rating = Object.values(interaction)[1];
+    const searchInteractions = `SELECT * FROM joke_reactions WHERE joke_id = ${jokeID} AND username = '${user}';`;
+    db.oneOrNone(searchInteractions)
+      .then((entry) => {
+        let reactionQuery;
+        if (entry) { 
+          if ((rating == 'like') || (rating == 'dislike')) {
+            reactionQuery = `UPDATE joke_reactions SET reaction = '${rating}' WHERE joke_id = ${jokeID} AND username = '${user}';`;
+          } else {
+            reactionQuery = `DELETE FROM joke_reactions WHERE joke_id = ${jokeID} AND username = '${user}';`;
+          }
+        } else {
+          reactionQuery = `INSERT INTO joke_reactions (joke_id, username, reaction) VALUES (${jokeID}, '${user}', '${rating}');`;
+        }
+        console.log(reactionQuery);
+        db.none(reactionQuery);
+      })
+      .catch((error) => {
+        console.error(error);
+      });
   } catch (error) {
-    console.error(error);
-    res.redirect('/jokecreate');
+    res.status(500).send("Failed to interact with joke.")
   }
 });
 
-app.get('/feed', auth, async (req, res) => {
+app.post('/reportJoke', async (req, res) => {
   try {
-    const sortOrder = req.query.sort === 'oldest' ? 'ASC' : 'DESC';
-    const tagFilter = req.query.tag ? req.query.tag.trim() : '';
+    const report = req.body.data;
+    const jokeID = report.joke_id;
+    const user = req.session.user.username;
+    const reason = report.report_reason;
+    const details = report.report_explanation;
+    const reportQuery = `INSERT INTO joke_reports (joke_id, reporter_username, reason, details) VALUES (${jokeID}, '${user}','${reason}', '${details}');`;
+    await db.none(reportQuery);
+  } catch(err) {
+    res.status(500).send("Failed to report joke.");
+  }
+});
 
-    let query = `
-      SELECT j.*, u.profile_photo_url
-      FROM jokes j 
-      JOIN users u ON j.author = u.username
-    `;
-    let queryParams = [];
+app.post('/loadJokes', async (req, res) => {
+  try {
+    const data         = req.body;
+    const jokes_loaded = data.loaded || 0;
+    let searchQuery    = '';
+    
+    const sortOrder = data.sortOrder === 'oldest' ? 'ASC' : 'DESC';
 
-    if (tagFilter) {  
-      query += ` WHERE j.tags ILIKE $1`;
-      queryParams.push(`%${tagFilter}%`);
+    if ("searchType" in data && data.searchBar) {
+      const search = data.searchBar;
+      const type   = data.searchType;
+      searchQuery  = type === 'content'
+        ? `WHERE content ILIKE '%${search}%'`
+        : `WHERE tags ILIKE '%${search}%'`;
     }
 
-    query += ` ORDER BY j.timestamp ${sortOrder}`;
+    const joke = await db.oneOrNone(
+      `SELECT * FROM jokes ${searchQuery}
+       ORDER BY timestamp ${sortOrder}, id ${sortOrder}
+       LIMIT 1 OFFSET $1`,
+      [jokes_loaded]
+    );
 
-    const jokes = await db.any(query, queryParams);
+    if (!joke) {
+      return res.status(404).render('partials/message.hbs', {
+        layout: false,
+        error: true,
+        message: 'No more jokes...'
+      });
+    }
 
-    res.render('pages/feed', { 
-      user: res.locals.user,
-      jokes: jokes,
-      currentSort: req.query.sort || 'newest',
-      currentTag: tagFilter,
-      error: false
+    const photo = await db.oneOrNone(
+      `SELECT profile_photo_url FROM users WHERE username = $1`,
+      [joke.author]
+    );
+
+    const filterOn  = req.session.user?.profanity_filter ?? true;
+    const displayed = filterOn
+      ? (joke.censored_content || joke.content)   
+      : joke.content;
+
+    res.render('partials/post.hbs', {
+      layout:         false,
+      jokeID:         joke.id,
+      username:       joke.author,
+      profilePicture: photo?.profile_photo_url,
+      timestamp:      timeAgo(joke.timestamp), 
+      content:        displayed,
+      hasProfanity:   joke.censored_content !== joke.content
     });
   } catch (err) {
-    console.error("FEED ROUTE ERROR:", err);
-    res.status(500).send("Database Error: " + err.message);
+    console.error(err);
+    res.status(500).send("Error");
   }
 });
 
-app.get('/leaderboards', (req,res) => {
-  res.render('pages/leaderboard', { 
-    user: res.locals.user
-  });
-});
-
-app.post('/rateJoke', (req,res) => {
-  const rating = req.body.data;
-  switch (rating) {
-    case "upvote":
-      console.log("the joke was upvoted");
-      break;
-    case "downvote":
-      console.log("the joke was downvoted")
-      break;
-  }
-});
-
-app.post('/reportJoke', (req, res) => {
+app.post('/loadLeaderboardElement', async (req,res) => {
   try {
-    console.log(req.body.data);
-  } catch(err) {
-    res.status(500).send("Failed to report joke");
-  }
-});
+    const data = req.body;
+    const elementsLoaded = data.elementsLoaded;
 
-app.get('/loadJokes', async (req,res) => {
-  try {
-    res.render('partials/post.hbs', { layout: false });
+    const queryUserInfo = `SELECT * FROM users ORDER BY username ASC LIMIT 1 OFFSET ${elementsLoaded};`;
+    const user = await db.oneOrNone(queryUserInfo);
+    res.render('partials/user.hbs', {
+      layout: false,
+      username: user.username,
+      profilePicture: user.profile_photo_url
+    });
   } catch (err) {
-    res.status(500).send("Failed to load post")
+    res.status(500).send("Error");
+  }
+});
+
+app.get('/getJokeCount', async (req,res) => {
+  try {
+    const jokeCount = `SELECT Count(*) FROM jokes;`;
+    const count = await db.one(jokeCount)
+    res.send(count);
+  } catch (err) {
+    res.status(500).send("Error");
+  }
+});
+
+app.get('/getAccountCount', async (req,res) => {
+  try {
+    const accountCount = `SELECT Count(*) FROM users;`;
+    const count = await db.one(accountCount)
+    res.send(count);
+  } catch (err) {
+    res.status(500).send("Error");
   }
 });
 

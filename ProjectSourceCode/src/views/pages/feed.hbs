@@ -1,37 +1,32 @@
 <div class="container justify-content-center align-items-center" id="feed_page">
-    <h1 class="henny-penny-regular my-4 text-center">Feed the doomscroll...</h1>
-    
-    <form class="row g-2 justify-content-center mb-4" method="GET" action="/feed">
-        <div class="col-auto">
-            <select name="sort" class="form-select">
-                <option value="newest" {{#if (eq currentSort "newest")}}selected{{/if}}>Newest First</option>
-                <option value="oldest" {{#if (eq currentSort "oldest")}}selected{{/if}}>Oldest First</option>
+    <h1 class="henny-penny-regular my-4">Feed the doomscroll...</h1>
+    <div class="pb-2">
+        <form action="/search" method="POST" id="searchJokes" name="searchJokes" onsubmit="timeoutButton(document.getElementById('submitSearch'))">
+            <label for="searchType">Search by...</label>
+            <select name="searchType" id="searchType">
+                <option value="content">Content</option>
+                <option value="tags">Tags</option>
             </select>
-        </div>
-        <div class="col-auto">
-            <input type="text" name="tag" class="form-control" placeholder="Search by tag (e.g. pun)" value="{{currentTag}}">
-        </div>
-        <div class="col-auto">
-            <button type="submit" class="btn btn-purple henny-penny-regular">Filter Feed</button>
-        </div>
-    </form>
-
-    <div class="container border rounded overflow-auto p-3" id="feedBox" style="height: 600px; background-color: rgba(0,0,0,0.05);">
-        {{#each jokes}}
-            {{> post}}
-        {{else}}
-            <div class="text-center mt-5">
-                <h3 class="text-muted">No jokes found!</h3>
-                <p>Try searching for a different tag, or be the first to post a joke.</p>
-            </div>
-        {{/each}}
+            <input type="text" name="searchBar" class="mx-2">
+            
+            <label for="sortOrder">Sort:</label>
+            <select name="sortOrder" id="sortOrder" onchange="this.form.requestSubmit()">
+                <option value="newest">Newest First</option>
+                <option value="oldest">Oldest First</option>
+            </select>
+            
+            <button id="submitSearch" type="submit" class="btn btn-purple henny-penny-regular ms-2" name="searchButton">Search!</button>
+        </form>
     </div>
+    <div class="container border-top border-bottom bg-light rounded justify-content-center align-items-center overflow-auto" id="feedBox" style="height: 500px;">
 
-    <form class="text-center my-3" action="/loadJokes" method="GET" id="loadJokes">
+    </div>
+    <form class="text-center my-3" action="/loadJokes" method="GET" id="loadJokes" name="loadJokes">
         <button class="btn btn-purple henny-penny-regular" type="submit" style="font-size: x-large;">Entertain me, Jester!</button>
     </form>
-    
     <div class="text-center my-3">
-        <a href="/home" class="btn btn-purple henny-penny-regular">Home</a>
+        <a href="/home" class="btn btn-purple henny-penny-regular">
+            Home
+        </a>
     </div>
 </div>
