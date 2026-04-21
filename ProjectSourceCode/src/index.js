@@ -498,7 +498,7 @@ app.get('/profile/:username?', auth, async (req, res) => {
 });
 
 // Profile Edit page (GET)
-app.get('/profile/edit', auth, async (req, res) => {
+app.get('/profile-edit', auth, async (req, res) => {
   try {
     const user = await db.one('SELECT * FROM users WHERE username = $1', [req.session.user.username]);
     res.status(200).render('pages/profile-edit', {
@@ -511,7 +511,7 @@ app.get('/profile/edit', auth, async (req, res) => {
 });
 
 // Profile Edit page (POST) - Updates database
-app.post('/profile/edit', auth, async (req, res) => {
+app.post('/profile-edit', auth, async (req, res) => {
   try {
     // Checkboxes send 'on' if checked, map this to a boolean
     const isPrivate = req.body.is_private === 'on';
@@ -524,7 +524,7 @@ app.post('/profile/edit', auth, async (req, res) => {
     res.redirect('/profile');
   } catch (error) {
     console.error(error);
-    res.redirect('/profile/edit');
+    res.redirect('/profile-edit');
   }
 });
 
