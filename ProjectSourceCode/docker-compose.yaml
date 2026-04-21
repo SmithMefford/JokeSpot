@@ -1,12 +1,25 @@
 services:
   db:
-    image: postgres:16 # (Notice this is still showing as 18 in your terminal, make sure to change it!)
+    image: postgres:18
+    env_file: .env
+    expose:
+      - '5432'
+    volumes:
+      - jokespot-db:/var/lib/postgresql
+      - ./src/init_data:/docker-entrypoint-initdb.d
+    restart: unless-stopped
+
+  web:
+    image: node:lts
+    working_dir: /home/node/app
+    env_file: .env
     environment:
-      POSTGRES_USER: postgres
-      POSTGRES_PASSWORD: pwd
-      POSTGRES_DB: jokespot
+      - NODE_ENV=development
+      - CHOKIDAR_USEPOLLING=true
+    depends_on:
+      - db
     ports:
-      - "5432:5432"    # <-- THIS IS THE MISSING PIECE!
+      - '3000:3000'
     volumes:
       - ./:/home/node/app
     command: 'npm start'
