@@ -7,8 +7,15 @@
                 <option value="content">Content</option>
                 <option value="tags">Tags</option>
             </select>
-            <Input type="text" name="searchBar"></Input>
-            <button id="submitSearch" type="submit" class="btn btn-purple henny-penny-regular" name="searchButton">Search!</button>
+            <input type="text" name="searchBar" class="mx-2">
+            
+            <label for="sortOrder">Sort:</label>
+            <select name="sortOrder" id="sortOrder" onchange="this.form.requestSubmit()">
+                <option value="newest">Newest First</option>
+                <option value="oldest">Oldest First</option>
+            </select>
+            
+            <button id="submitSearch" type="submit" class="btn btn-purple henny-penny-regular ms-2" name="searchButton">Search!</button>
         </form>
     </div>
     <div class="container border-top border-bottom rounded justify-content-center align-items-center overflow-auto" id="feedBox" style="height: 500px;">
