@@ -11,7 +11,7 @@
             <button id="submitSearch" type="submit" class="btn btn-purple henny-penny-regular" name="searchButton">Search!</button>
         </form>
     </div>
-    <div class="container border-top border-bottom bg-light rounded justify-content-center align-items-center overflow-auto" id="feedBox" style="height: 500px;">
+    <div class="container border-top border-bottom rounded justify-content-center align-items-center overflow-auto" id="feedBox" style="height: 500px;">
 
     </div>
     <form class="text-center my-3" action="/loadJokes" method="GET" id="loadJokes" name="loadJokes">
@@ -23,3 +23,33 @@
         </a>
     </div>
 </div>
+<script>
+let jokesLoaded = 0;
+
+async function loadJoke() {
+  const res = await fetch('/loadJokes', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json'
+    },
+    body: JSON.stringify({ loaded: jokesLoaded })
+  });
+
+  const html = await res.text();
+
+  document.getElementById('feedBox').innerHTML += html;
+  jokesLoaded++;
+}
+
+document.getElementById('jokeBtn').addEventListener('click', (e) => {
+  e.preventDefault();
+  loadJoke();
+});
+</script>
+<script>
+const autoRefreshEnabled = {{#if user.auto_refresh}}true{{else}}false{{/if}};
+
+if (autoRefreshEnabled) {
+  setInterval(loadJoke, 2000);
+}
+</script>
