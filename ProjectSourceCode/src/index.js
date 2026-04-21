@@ -402,6 +402,25 @@ app.get('/profanityList', (req, res) => {
     .filter(Boolean);
   res.json(words);
 });
+app.get('/hateSpeechList', (req, res) => {
+  try {
+    const filePath = path.join(__dirname, 'resources', 'filters', 'hate_speech_block.csv');
+    if (fs.existsSync(filePath)) {
+      const raw = fs.readFileSync(filePath, 'utf8');
+      const words = raw
+        .split('\n')
+        .slice(1) // Skip CSV header
+        .map(line => line.trim().replace(/\r/g, ''))
+        .filter(Boolean);
+      res.json(words);
+    } else {
+      res.json([]); // Return empty if file doesn't exist yet
+    }
+  } catch (error) {
+    console.error("Error reading hate speech list:", error);
+    res.json([]);
+  }
+});
 
 app.get('/leaderboards', (req,res) => {
   res.render('pages/leaderboard', { 
