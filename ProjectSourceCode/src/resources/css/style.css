@@ -30,20 +30,38 @@
   color: white;
   border: none;
 }
-
 .btn-purple:hover {
   background-color: #5a32a3;
   color: white;
 }
 
 .btn-orange {
-  background-color: #fd7e14;  /* Bootstrap orange */
+  background-color: #fd7e14;  /* orange */
   color: white;
   border: none;
 }
-
 .btn-orange:hover {
   background-color: #e96b02;
+  color: white;
+}
+
+.btn-sky {
+  background-color: #31d2f2;  /* sky blue */
+  color: white;
+  border: none;
+}
+.btn-sky:hover {
+  background-color: #0dcaf0; 
+  color: white;
+}
+
+.btn-yellow {
+  background-color: #ffd43B;  /* soft yellow */
+  color: white;
+  border: none;
+}
+.btn-yellow:hover {
+  background-color: #e6bd2f;
   color: white;
 }
 
