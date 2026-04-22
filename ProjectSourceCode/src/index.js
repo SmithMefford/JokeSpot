@@ -162,19 +162,24 @@ app.get('/register', (req, res) => {
 });
 
 app.get('/home', async (req, res) => {
+  // Retrieve Joke of the Day from the Database 
+  // date generates hash & must be a day old
   try {
     const jokeOfTheDay = await db.one(
-        `SELECT * FROM jokes ORDER BY id 
-        OFFSET (
-            FLOOR(EXTRACT(EPOCH FROM CURRENT_DATE) / 86400)::int
-            % (SELECT COUNT(*) FROM jokes)
-        )
+        `SELECT * FROM jokes
+        WHERE "timestamp" < CURRENT_DATE
+        ORDER BY md5(id::text || CURRENT_DATE::text)
         LIMIT 1`
     );
 
+    let jokeOfTheDayMessage = jokeOfTheDay.content;
+    if (req.session.user && req.session.user.profanity_filter)
+        jokeOfTheDayMessage = jokeOfTheDay.censored_content;
+
     res.render('pages/home', {
         user: res.locals.user,
-        message: jokeOfTheDay.content,
+        message: jokeOfTheDayMessage,
+        featuredAuthor: jokeOfTheDay.author,
         error: false
     });
   }
@@ -183,6 +188,7 @@ app.get('/home', async (req, res) => {
     res.render('pages/home', {
         user: res.locals.user,
         message: 'Joke\'s on us: Failed to retrieve the Joke of the Day.',
+        featuredAuthor: 'JokeSpot Dev Team',
         error: true
     });
   }
