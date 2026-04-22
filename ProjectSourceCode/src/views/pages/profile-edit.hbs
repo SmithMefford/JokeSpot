@@ -4,17 +4,17 @@
             <h3 class="henny-penny-regular text-primary">Edit Profile</h3>
         </div>
         <div class="card-body">
-            <form action="/profile/edit" method="POST">
+            
+            <form action="/profile-edit" method="POST" enctype="multipart/form-data">
                 
-                <div class="mb-3">
-                    <label for="displayName" class="form-label fw-bold">Display Name</label>
-                    <input type="text" class="form-control" id="displayName" name="display_name" value="{{user.display_name}}">
-                </div>
-
-                <div class="mb-3">
-                    <label for="photoUrl" class="form-label fw-bold">Profile Photo URL</label>
-                    <input type="text" class="form-control" id="photoUrl" name="profile_photo_url" value="{{user.profile_photo_url}}">
-                    <div class="form-text">Paste a link to your image (or leave default).</div>
+                <div class="mb-4 text-center">
+                    <p class="mb-2 fw-bold">Current Photo:</p>
+                    <img src="{{user.profile_photo_url}}" alt="Profile Photo" class="rounded-circle mb-3 border" style="width: 120px; height: 120px; object-fit: cover;">
+                    <br>
+                    
+                    <label for="profile_picture" class="form-label fw-bold text-start w-100 mt-2">Upload New Profile Photo</label>
+                    <input type="file" class="form-control" id="profile_picture" name="profile_picture" accept="image/png, image/jpeg, image/jpg">
+                    <div class="form-text text-start">Accepted formats: .jpg, .png</div>
                 </div>
 
                 <div class="mb-4 form-check mt-4">

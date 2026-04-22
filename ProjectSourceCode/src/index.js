@@ -12,6 +12,7 @@ const session = require('express-session');
 const bcrypt = require('bcryptjs');
 const { hasProfanity, censorText } = require('./profanityFilter');
 const fs = require('fs');
+const multer = require('multer');
 
 // *****************************************************
 // Section 2: Configure Handlebars & Database
@@ -37,15 +38,32 @@ app.use('/css', express.static(path.join(__dirname, 'resources', 'css')));
 app.use('/js', express.static(path.join(__dirname, 'resources', 'js')));
 app.use('/img', express.static(path.join(__dirname, 'resources', 'img')));
 
+const pfpDir = path.join(__dirname, 'resources', 'img', 'pfp');
+if (!fs.existsSync(pfpDir)) {
+  fs.mkdirSync(pfpDir, { recursive: true });
+}
+
+// Set up Multer for image uploads
+const storage = multer.diskStorage({
+  destination: function (req, file, cb) {
+    cb(null, pfpDir); 
+  },
+  filename: function (req, file, cb) {
+    const ext = path.extname(file.originalname);
+    cb(null, req.session.user.username + '-' + Date.now() + ext);
+  }
+});
+const upload = multer({ storage: storage });
+
 // Session setup
 app.use(
   session({
     secret: process.env.SESSION_SECRET || 'superdupersecret!',
     saveUninitialized: false,
     resave: false,
-    // no name set, cookie name defaults to: 'connect.sid'
   })
 );
+
 app.use((req, res, next) => {
     res.locals.user = req.session.user || null;
     next();
@@ -74,7 +92,7 @@ db.connect()
   });
 
 // *****************************************************
-// Section 3: Middleware
+// Section 3: Middleware & Helpers
 // *****************************************************
 
 const auth = (req, res, next) => {
@@ -97,35 +115,52 @@ const onlyUser0 = (req, res, next) => {
   next();
 };
 
+function timeAgo(date) {
+  if (!date) return "Unknown time";
+  const seconds = Math.floor((new Date() - new Date(date)) / 1000);
+  
+  if (seconds < 60) return "Just now";
+  
+  const intervals = [
+    { label: 'year', seconds: 31536000 },
+    { label: 'month', seconds: 2592000 },
+    { label: 'day', seconds: 86400 },
+    { label: 'hour', seconds: 3600 },
+    { label: 'minute', seconds: 60 }
+  ];
+  
+  for (let i = 0; i < intervals.length; i++) {
+    const interval = Math.floor(seconds / intervals[i].seconds);
+    if (interval >= 1) {
+      return `${interval} ${intervals[i].label}${interval !== 1 ? 's' : ''} ago`;
+    }
+  }
+  return "Just now";
+}
+
 // *****************************************************
 // Section 4: Routes
 // *****************************************************
 
-// Dummy api to test that server.spec connects to index
 app.get('/welcome', (req, res) => {
   res.json({status: 'success', message: 'Welcome!'});
 });
 
-// Redirect root to login
 app.get('/', (req, res) => {
   res.redirect('/home');
 });
 
-// Login page
 app.get('/login', (req, res) => {
   res.render('pages/login', {
-    // sends logout message if boolean true
     message: req.query.logout ? "Logged out successfully!" : null,
     error: false
-  });  // status 200 is success
+  });  
 });
 
-// Register page
 app.get('/register', (req, res) => {
   res.render('pages/register');
 });
 
-// Home page (protected)
 app.get('/home', async (req, res) => {
   // Retrieve Joke of the Day from the Database 
   // date generates hash & must be a day old
@@ -149,8 +184,7 @@ app.get('/home', async (req, res) => {
     });
   }
   catch (err) {
-    console.error(err);  // log error
-
+    console.error(err);
     res.render('pages/home', {
         user: res.locals.user,
         message: 'Joke\'s on us: Failed to retrieve the Joke of the Day.',
@@ -158,7 +192,6 @@ app.get('/home', async (req, res) => {
         error: true
     });
   }
-  
 });
 
 app.get('/admin', onlyUser0, async (req, res) => {
@@ -258,7 +291,6 @@ app.post('/register', async (req, res) => {
   try {
     const hash = await bcrypt.hash(req.body.password, 10);
     
-    // Randomly assign a default profile picture upon registration
     const defaultAvatars = [
       '/img/default_profile_1.png',
       '/img/default_profile_2.png',
@@ -268,9 +300,8 @@ app.post('/register', async (req, res) => {
     ];
     const randomAvatar = defaultAvatars[Math.floor(Math.random() * defaultAvatars.length)];
 
-    const profanityFilterEnabled = req.body.profanity_filter === "true";  // boolean
+    const profanityFilterEnabled = req.body.profanity_filter === "true";
 
-    // INSERT new user with profile_photo_url and profanity setting
     await db.none(
       'INSERT INTO users(username, password, profile_photo_url, profanity_filter) VALUES($1, $2, $3, $4)',
       [req.body.username, hash, randomAvatar, profanityFilterEnabled]
@@ -280,13 +311,11 @@ app.post('/register', async (req, res) => {
       [req.body.username]
     );
 
-    // signs in the user upon registration
     req.session.user = user;
     req.session.save();
 
-    return res.redirect('/home');  // redirect is code 302
+    return res.redirect('/home');
   } catch (error) {
-    // console.error(error);  // removed bc makes tests hard to see
     res.status(400).render('pages/register', {
       message: 'That account already exists!',
       error: true
@@ -294,7 +323,6 @@ app.post('/register', async (req, res) => {
   }
 });
 
-// Login POST
 app.post('/login', async (req, res) => {
   try {
     const user = await db.oneOrNone(
@@ -320,21 +348,19 @@ app.post('/login', async (req, res) => {
     req.session.save();
     res.status(200).redirect('/home');
   } catch (error) {
-    //console.error(error);
     res.status(400).redirect('/login');
   }
 });
 
-// Logout
 app.get('/logout', auth, (req, res) => {
-  req.session.destroy((err) => {  // deletes session reference on server
+  req.session.destroy((err) => { 
     if (err) {
-      console.log(err);  // log possible error
-      return res.status(400).redirect('/home');  // stay on the home page (could also display fail message)
+      console.log(err);
+      return res.status(400).redirect('/home');
     }
 
-    res.clearCookie('connect.sid');  // deletes session reference on browser (client side)
-    return res.redirect('/login?logout=1');  // sends you to login upon logout + sets boolean
+    res.clearCookie('connect.sid');
+    return res.redirect('/login?logout=1');
   });
 });
 
@@ -380,6 +406,7 @@ app.post('/jokecreate', auth, async (req, res) => {
   }
 
   try {
+    // Soft catch: Censor profanity if present
     const censored = hasProfanity(jokeContent)
       ? censorText(jokeContent)
       : jokeContent;
@@ -393,19 +420,44 @@ app.post('/jokecreate', auth, async (req, res) => {
     res.redirect('/home');
   } catch (err) {
     console.error(err);
-    res.sendStatus(500);
+    res.status(500).send("Error");
   }
 });
 
 app.get('/profanityList', (req, res) => {
   const filePath = path.join(__dirname, 'resources', 'filters', 'profanity_censor.csv');
-  const raw = fs.readFileSync(filePath, 'utf8');
-  const words = raw
-    .split('\n')
-    .slice(1)
-    .map(line => line.trim().replace(/\r/g, ''))
-    .filter(Boolean);
-  res.json(words);
+  try {
+    const raw = fs.readFileSync(filePath, 'utf8');
+    const words = raw
+      .split('\n')
+      .slice(1)
+      .map(line => line.trim().replace(/\r/g, ''))
+      .filter(Boolean);
+    res.json(words);
+  } catch (err) {
+    console.error("Error reading profanity list:", err);
+    res.json([]);
+  }
+});
+
+app.get('/hateSpeechList', (req, res) => {
+  try {
+    const filePath = path.join(__dirname, 'resources', 'filters', 'hate_speech_block.csv');
+    if (fs.existsSync(filePath)) {
+      const raw = fs.readFileSync(filePath, 'utf8');
+      const words = raw
+        .split('\n')
+        .slice(1) // Skip CSV header
+        .map(line => line.trim().replace(/\r/g, ''))
+        .filter(Boolean);
+      res.json(words);
+    } else {
+      res.json([]); 
+    }
+  } catch (error) {
+    console.error("Error reading hate speech list:", error);
+    res.json([]);
+  }
 });
 
 app.get('/leaderboards', (req,res) => {
@@ -464,46 +516,8 @@ app.post('/settings', auth, async (req, res) => {
 // Section 4.1: Profile Routes
 // *****************************************************
 
-// Profile page (Dynamic based on username parameter)
-app.get('/profile/:username?', auth, async (req, res) => {
-  try {
-    // Determine if user is viewing their own profile or someone else's
-    const targetUsername = req.params.username || req.session.user.username;
-    const isOwner = targetUsername === req.session.user.username;
-
-    // Fetch user data from the database
-    const profileUser = await db.oneOrNone('SELECT * FROM users WHERE username = $1', [targetUsername]);
-
-    if (!profileUser) {
-      return res.redirect('/home');
-    }
-
-    // Hide stats if the account is private and the viewer is not the owner
-    const isPrivateView = profileUser.is_private && !isOwner;
-
-    // Placeholder stats (To be updated with real database queries later)
-    const average_rating = 4.5;
-    const rank = 10;
-    const rating_title = "Open Mic Rookie";
-
-    res.render('pages/profile', {
-      display_name: profileUser.display_name || profileUser.username,
-      username: profileUser.username,
-      profile_photo_url: profileUser.profile_photo_url,
-      is_private_view: isPrivateView,
-      is_owner: isOwner,
-      average_rating,
-      rank,
-      rating_title
-    });
-  } catch (error) {
-    console.error(error);
-    res.redirect('/home');
-  }
-});
-
 // Profile Edit page (GET)
-app.get('/profile/edit', auth, async (req, res) => {
+app.get('/profile-edit', auth, async (req, res) => {
   try {
     const user = await db.one('SELECT * FROM users WHERE username = $1', [req.session.user.username]);
     res.status(200).render('pages/profile-edit', {
@@ -516,20 +530,74 @@ app.get('/profile/edit', auth, async (req, res) => {
 });
 
 // Profile Edit page (POST) - Updates database
-app.post('/profile/edit', auth, async (req, res) => {
+app.post('/profile-edit', auth, upload.single('profile_picture'), async (req, res) => {
   try {
-    // Checkboxes send 'on' if checked, map this to a boolean
     const isPrivate = req.body.is_private === 'on';
     
+    const currentUser = await db.one('SELECT profile_photo_url FROM users WHERE username = $1', [req.session.user.username]);
+    let newPhotoUrl = currentUser.profile_photo_url;
+
+    if (req.file) {
+        newPhotoUrl = '/img/pfp/' + req.file.filename;
+    }
+
     await db.none(
-      'UPDATE users SET display_name = $1, profile_photo_url = $2, is_private = $3 WHERE username = $4',
-      [req.body.display_name, req.body.profile_photo_url, isPrivate, req.session.user.username]
+      'UPDATE users SET profile_photo_url = $1, is_private = $2 WHERE username = $3',
+      [newPhotoUrl, isPrivate, req.session.user.username]
     );
     
     res.redirect('/profile');
   } catch (error) {
     console.error(error);
-    res.redirect('/profile/edit');
+    res.redirect('/profile-edit');
+  }
+});
+
+// Profile page (Dynamic based on username parameter)
+app.get('/profile/:username?', auth, async (req, res) => {
+  try {
+    const targetUsername = req.params.username || req.session.user.username;
+    const isOwner = targetUsername === req.session.user.username;
+
+    const profileUser = await db.oneOrNone('SELECT * FROM users WHERE username = $1', [targetUsername]);
+
+    if (!profileUser) {
+      return res.redirect('/home');
+    }
+
+    const isPrivateView = profileUser.is_private && !isOwner;
+
+    // UPDATED: Dynamically calculate Total Likes and Leaderboard Rank using a CTE Window Function
+    const statsQuery = `
+      WITH UserLikes AS (
+          SELECT u.username, COUNT(jr.joke_id) AS total_likes
+          FROM users u
+          LEFT JOIN jokes j ON u.username = j.author
+          LEFT JOIN joke_reactions jr ON j.id = jr.joke_id AND jr.reaction = 'like'
+          GROUP BY u.username
+      )
+      SELECT total_likes, rank FROM (
+          SELECT username, total_likes, RANK() OVER (ORDER BY total_likes DESC) as rank
+          FROM UserLikes
+      ) ranked
+      WHERE username = $1;
+    `;
+    
+    const stats = await db.oneOrNone(statsQuery, [targetUsername]);
+
+    res.render('pages/profile', {
+      display_name: profileUser.display_name || profileUser.username,
+      username: profileUser.username,
+      profile_photo_url: profileUser.profile_photo_url,
+      is_private_view: isPrivateView,
+      is_owner: isOwner,
+      total_likes: stats ? stats.total_likes : 0, 
+      rank: stats ? stats.rank : '-',             
+      rating_title: "Open Mic Rookie"
+    });
+  } catch (error) {
+    console.error(error);
+    res.redirect('/home');
   }
 });
 
@@ -537,27 +605,23 @@ app.post('/profile/edit', auth, async (req, res) => {
 // Section 4.2: Interaction & Post Routes
 // *****************************************************
 
-// Once the joke creation backend is implemented, we can replace the console logs with the actual data inserts.
 app.post('/rateJoke', async (req,res) => {
   try {
     const interaction = req.body.data;
     const jokeID = Object.values(interaction)[0];
     const user = req.session.user.username;
     const rating = Object.values(interaction)[1];
-    const searchInteractions = `SELECT * FROM joke_reactions WHERE joke_id = ${jokeID} AND username = '${user}';`; // Need to check if the user has already interacted with this joke
+    const searchInteractions = `SELECT * FROM joke_reactions WHERE joke_id = ${jokeID} AND username = '${user}';`;
     db.oneOrNone(searchInteractions)
       .then((entry) => {
         let reactionQuery;
-        if (entry) { // An entry exists already, either we are deleting or updating
-          // Update with rating
+        if (entry) { 
           if ((rating == 'like') || (rating == 'dislike')) {
             reactionQuery = `UPDATE joke_reactions SET reaction = '${rating}' WHERE joke_id = ${jokeID} AND username = '${user}';`;
           } else {
-            // Delete the reaction
             reactionQuery = `DELETE FROM joke_reactions WHERE joke_id = ${jokeID} AND username = '${user}';`;
           }
         } else {
-          // An entry does not exist, insert a reaction
           reactionQuery = `INSERT INTO joke_reactions (joke_id, username, reaction) VALUES (${jokeID}, '${user}', '${rating}');`;
         }
         console.log(reactionQuery);
@@ -585,16 +649,16 @@ app.post('/reportJoke', async (req, res) => {
   }
 });
 
-// Prepares the partial and then sends it to the client to be inserted dynamically
-// Later, we can modify this to retrieve data from the DB, populate the post partial,
-// then send it back to the client.
 app.post('/loadJokes', async (req, res) => {
   try {
     const data         = req.body;
-    const jokes_loaded = data.loaded;
+    const jokes_loaded = data.loaded || 0;
     let searchQuery    = '';
+    
+    // Sort logic from your feature branch
+    const sortOrder = data.sortOrder === 'oldest' ? 'ASC' : 'DESC';
 
-    if ("searchType" in data) {
+    if ("searchType" in data && data.searchBar) {
       const search = data.searchBar;
       const type   = data.searchType;
       searchQuery  = type === 'content'
@@ -604,7 +668,7 @@ app.post('/loadJokes', async (req, res) => {
 
     const joke = await db.oneOrNone(
       `SELECT * FROM jokes ${searchQuery}
-       ORDER BY timestamp DESC, id DESC
+       ORDER BY timestamp ${sortOrder}, id ${sortOrder}
        LIMIT 1 OFFSET $1`,
       [jokes_loaded]
     );
@@ -622,10 +686,9 @@ app.post('/loadJokes', async (req, res) => {
       [joke.author]
     );
 
-    // Respect the viewing user's profanity filter preference
     const filterOn  = req.session.user?.profanity_filter ?? true;
     const displayed = filterOn
-      ? (joke.censored_content || joke.content)   // fall back if censored_content is null
+      ? (joke.censored_content || joke.content)   
       : joke.content;
 
     res.render('partials/post.hbs', {
@@ -633,22 +696,13 @@ app.post('/loadJokes', async (req, res) => {
       jokeID:         joke.id,
       username:       joke.author,
       profilePicture: photo?.profile_photo_url,
-      timestamp:      joke.timestamp,
+      timestamp:      timeAgo(joke.timestamp), 
       content:        displayed,
       hasProfanity:   joke.censored_content !== joke.content
     });
   } catch (err) {
-    res.render('partials/post.hbs', {
-      layout:         false,
-      jokeID:         joke.id,
-      username:       joke.author,
-      profilePicture: photo?.profile_photo_url,
-      timestamp:      joke.timestamp,
-      content:        displayed,
-      hasProfanity:   joke.censored_content !== joke.content
-    });
     console.error(err);
-    res.status(500);
+    res.status(500).send("Error");
   }
 });
 
@@ -656,8 +710,6 @@ app.post('/loadLeaderboardElement', async (req,res) => {
   try {
     const data = req.body;
     const elementsLoaded = data.elementsLoaded;
-    let searchQuery = '';
-    console.log(data)
 
     const queryUserInfo = `SELECT * FROM users ORDER BY username ASC LIMIT 1 OFFSET ${elementsLoaded};`;
     const user = await db.oneOrNone(queryUserInfo);
@@ -667,7 +719,7 @@ app.post('/loadLeaderboardElement', async (req,res) => {
       profilePicture: user.profile_photo_url
     });
   } catch (err) {
-    res.status(500);
+    res.status(500).send("Error");
   }
 });
 
@@ -677,7 +729,7 @@ app.get('/getJokeCount', async (req,res) => {
     const count = await db.one(jokeCount)
     res.send(count);
   } catch (err) {
-    res.status(500);
+    res.status(500).send("Error");
   }
 });
 
@@ -687,7 +739,7 @@ app.get('/getAccountCount', async (req,res) => {
     const count = await db.one(accountCount)
     res.send(count);
   } catch (err) {
-    res.status(500);
+    res.status(500).send("Error");
   }
 });
 
