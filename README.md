@@ -14,12 +14,45 @@ Upon opening JokeSpot, the “Joke of the Day” will be displayed with a button
     - Smith Mefford
     - Kellen Partridge
 
-## Technology Stack (TO BE ADDED LATER)
+## Technology Stack
+Front-End:
+    - HTML
+    - Handlebars
+    - CSS
+    - Bootstrap 5
+    - JavaScript
 
-## Prerequesites (TO BE DETERMINED LATER)
+Back-End:
+    - Node.js
+    - Express.js
 
-## Website Instructions (WILL BE MADE ON PROJECT COMPLETION)
+Database:
+    - PostgreSQL
 
-## How to run the tests (TO BE ADDED LATER)
+DevOps:
+    - Docker (containerization)
+    - Render (hosting)
 
-## Link to the deployed application (TO BE ADDED LATER)
+## Prerequesites
+    - Docker Engine
+    - Docker Compose
+    - Node.js
+    - npm
+
+## Running Locally
+To run locally, you must...
+    - Navigate to the ProjectSourceCode directory
+    - Install packages for node by running the command "npm install"
+    - Run the command "docker compose up -d" to start the containers for the web app and database in the background
+        - Remove "-d" to run them in the foreground
+    - Run the command "docker compose down" to stop the containers
+        - If running in the foreground, hit CTRL-C to stop the application, then run the command
+
+## How to run the tests
+To run the tests...
+    - Open "docker-compose.yaml"
+    - Under the "web" container, change the command "npm start" to "npm run testandrun"
+    - Use Docker to start the containers
+
+## Link to the deployed application
+https://jokespot.onrender.com/home
